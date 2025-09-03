@@ -1,19 +1,26 @@
+// Switch pages
 function showPage(pageId) {
   document.querySelectorAll(".page").forEach(p => p.style.display = "none");
   document.getElementById(pageId).style.display = "block";
 }
 
-// Example news fetching (from JSON that bot updates)
+// Load news from news.json
 async function loadNews() {
   try {
-    let res = await fetch("news.json"); // bot updates this file
+    let res = await fetch("news.json?" + new Date().getTime()); // prevent caching
     let news = await res.json();
     let container = document.getElementById("newsList");
     container.innerHTML = "";
+
     news.forEach(item => {
       let div = document.createElement("div");
       div.className = "news-item";
-      div.textContent = item;
+
+      let text = `<p>${item.text}</p>`;
+      let date = `<small>${item.date || ""}</small>`;
+      let img = item.image ? `<img src="${item.image}" alt="news image">` : "";
+
+      div.innerHTML = `${text}${img}${date}`;
       container.appendChild(div);
     });
   } catch (e) {
@@ -21,4 +28,8 @@ async function loadNews() {
   }
 }
 
+// Initial load
 loadNews();
+
+// Auto-refresh every 15 seconds
+setInterval(loadNews, 15000);
