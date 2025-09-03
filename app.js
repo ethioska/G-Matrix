@@ -1,13 +1,15 @@
-// Switch pages
 function showPage(pageId) {
   document.querySelectorAll(".page").forEach(p => p.style.display = "none");
   document.getElementById(pageId).style.display = "block";
+
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  document.getElementById("btn-" + pageId).classList.add("active");
 }
 
-// Load news from news.json
+// Load news
 async function loadNews() {
   try {
-    let res = await fetch("news.json?" + new Date().getTime()); // prevent caching
+    let res = await fetch("news.json?" + new Date().getTime());
     let news = await res.json();
     let container = document.getElementById("newsList");
     container.innerHTML = "";
@@ -28,8 +30,8 @@ async function loadNews() {
   }
 }
 
-// Initial load
 loadNews();
-
-// Auto-refresh every 15 seconds
 setInterval(loadNews, 15000);
+
+// Show Home by default
+showPage("home");
