@@ -5,7 +5,7 @@ const { BOT_TOKEN, ADMIN_ID, NEWS_FILE } = require("./config");
 
 const bot = new Telegraf(BOT_TOKEN);
 
-// Ensure news.json exists
+// Path for news.json
 const newsPath = path.join(__dirname, NEWS_FILE);
 if (!fs.existsSync(newsPath)) {
   fs.writeFileSync(newsPath, JSON.stringify([]));
@@ -13,31 +13,50 @@ if (!fs.existsSync(newsPath)) {
 
 // /start
 bot.start(ctx => {
-  ctx.reply("Welcome! Use /news <your text> to post updates.");
+  ctx.reply("👋 Welcome! Use /news <message> to post updates.");
 });
 
-// /news command
+// /news command (text only)
 bot.command("news", ctx => {
   if (ctx.from.id !== ADMIN_ID) {
-    return ctx.reply("You are not allowed to post news.");
+    return ctx.reply("❌ You are not allowed to post news.");
   }
 
   const text = ctx.message.text.replace("/news", "").trim();
   if (!text) {
-    return ctx.reply("Please provide news text. Example: /news Exams released today!");
+    return ctx.reply("Usage: /news <message>");
   }
 
-  // Load existing news
   let news = JSON.parse(fs.readFileSync(newsPath));
+  news.unshift({
+    text,
+    date: new Date().toISOString().slice(0, 16).replace("T", " ")
+  });
 
-  // Add new news at top
-  news.unshift(text);
-
-  // Save back
   fs.writeFileSync(newsPath, JSON.stringify(news, null, 2));
-
   ctx.reply("✅ News added!");
 });
 
+// When you send a photo with a caption
+bot.on("photo", ctx => {
+  if (ctx.from.id !== ADMIN_ID) return;
+
+  const fileId = ctx.message.photo.pop().file_id;
+  const caption = ctx.message.caption || "";
+
+  // Telegram File URL (⚠️ temporary, may expire after a while)
+  const imageUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileId}`;
+
+  let news = JSON.parse(fs.readFileSync(newsPath));
+  news.unshift({
+    text: caption,
+    image: imageUrl,
+    date: new Date().toISOString().slice(0, 16).replace("T", " ")
+  });
+
+  fs.writeFileSync(newsPath, JSON.stringify(news, null, 2));
+  ctx.reply("✅ News with image added!");
+});
+
 bot.launch();
-console.log("Bot is running...");
+console.log("🚀 Bot is running...");
