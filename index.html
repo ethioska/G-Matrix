@@ -1,110 +1,99 @@
-<!-- webapp/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mini App</title>
+  <title>G-Matrix</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="navbar">
-    <button onclick="showPage('home')">Home</button>
-    <button onclick="showPage('results')">Results</button>
-    <button onclick="showPage('contact')">Contact</button>
-  </div>
+  <header>📂 G-Matrix</header>
 
-  <!-- Home Page -->
+  <!-- Pages -->
   <div id="home" class="page">
-    <h2>📢 News</h2>
-    <div id="newsList">
-      <!-- Bot will push updates here -->
-    </div>
+    <h2>📰 News</h2>
+    <div id="newsList"></div>
   </div>
 
-  <!-- Results Page -->
-  <div id="results" class="page" style="display:none;">
+  <div id="results" class="page">
     <h2>📊 Results</h2>
-    <div class="results-container">
+    <div class="results-list">
       <div class="region">
         <h3>Addis Ababa</h3>
-        <a href="https://aa6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://aa.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://aa6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://aa.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>Central Ethiopia</h3>
-        <a href="https://ce6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://ce.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://ce6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://ce.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>Oromia</h3>
-        <a href="https://oromia6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://oromia.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://oromia6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://oromia.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>Amhara</h3>
-        <a href="https://amhara6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://amhara.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://amhara6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://amhara.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>South Ethiopia</h3>
-        <a href="https://se6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://se.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://se6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://se.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>Gambella</h3>
-        <a href="https://gambella6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://gambella.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://gambella6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://gambella.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>Afar</h3>
-        <a href="https://afar6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://afar.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://afar6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://afar.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>Harari</h3>
-        <a href="https://harari6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://harari.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://harari6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://harari.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>Somali</h3>
-        <a href="https://somali6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://somali.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://somali6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://somali.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>South West Ethiopia</h3>
-        <a href="https://swe6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://swe.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://swe6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://swe.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
         <h3>Sidama</h3>
-        <a href="https://sidam6.ministry.et" target="_blank">Grade 6</a>
-        <a href="https://sidama.ministry.et" target="_blank">Grade 8</a>
+        <a href="https://sidam6.ministry.et" target="_blank" class="result-btn">Grade 6</a>
+        <a href="https://sidama.ministry.et" target="_blank" class="result-btn">Grade 8</a>
       </div>
-
       <div class="region">
-        <h3>Grade 12</h3>
-        <a href="https://result.neaea.gov.et/" target="_blank">View Results</a>
+        <h3>Grade 12 (National)</h3>
+        <a href="https://result.neaea.gov.et/" target="_blank" class="result-btn big">View Results</a>
       </div>
     </div>
   </div>
 
-  <!-- Contact Page -->
-  <div id="contact" class="page" style="display:none;">
-    <h2>📞 Contact</h2>
-    <p><a href="https://t.me/YourChannel" target="_blank">Telegram Channel</a></p>
-    <p><a href="https://t.me/YourSupportUser" target="_blank">Support</a></p>
+  <div id="contact" class="page">
+    <h2>📞 Contact Us</h2>
+    <div class="contact-card">
+      <p>Stay connected with us:</p>
+      <a href="https://t.me/YourChannel" target="_blank" class="contact-btn">📢 Join Telegram Channel</a>
+      <a href="https://t.me/YourSupportUser" target="_blank" class="contact-btn">💬 Support</a>
+    </div>
   </div>
+
+  <!-- Bottom Nav -->
+  <nav>
+    <button onclick="showPage('home')" id="btn-home">Home</button>
+    <button onclick="showPage('results')" id="btn-results">Results</button>
+    <button onclick="showPage('contact')" id="btn-contact">Contact</button>
+  </nav>
 
   <script src="app.js"></script>
 </body>
