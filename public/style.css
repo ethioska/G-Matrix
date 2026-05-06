@@ -1,36 +1,37 @@
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f0f1b; color: white; overflow: hidden; }
-header { display: flex; justify-content: space-between; padding: 15px; background: #16213e; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-.logo { color: #ff0055; font-weight: bold; font-size: 20px; }
+:root {
+    --hala-cyan: #22e1d1;
+    --hala-bg: #f8f9fa;
+    --hala-dark: #1a1a1a;
+}
 
-.room-container { padding: 15px; display: flex; flex-direction: column; height: 85vh; }
-.room-header h2 { margin: 5px 0; font-size: 18px; text-align: center; }
-.room-header p { font-size: 12px; color: #bbb; text-align: center; margin-bottom: 20px; }
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--hala-bg); }
 
-.voice-seats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
-.seat { text-align: center; font-size: 11px; color: #aaa; }
-.avatar { width: 55px; height: 55px; background: #1a1a2e; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; border: 2px solid #333; transition: 0.3s; }
-.active-mic .avatar { border-color: #ff0055; box-shadow: 0 0 15px rgba(255,0,85,0.4); color: #ff0055; }
+.page { display: none; height: 100vh; flex-direction: column; }
+.active { display: flex; }
 
-.chat-box { flex-grow: 1; background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; overflow-y: auto; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
-.chat-box p { margin: 5px 0; font-size: 13px; line-height: 1.5; }
+/* Header */
+.hala-header { background: linear-gradient(90deg, #19d4c4, #22e1d1); padding: 15px; display: flex; justify-content: space-between; color: white; }
+.tabs span { margin-right: 15px; font-weight: bold; opacity: 0.7; }
+.active-tab { opacity: 1 !important; border-bottom: 2px solid white; }
 
-.controls { display: flex; align-items: center; gap: 10px; background: #16213e; padding: 10px 15px; border-radius: 30px; }
-.controls input { flex-grow: 1; background: transparent; border: none; color: white; outline: none; font-size: 14px; }
-.icon-btn { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 5px; }
-.icon-btn.send { color: #007bff; }
-.icon-btn.gift { color: #ffd700; }
+/* Room List */
+.room-list { padding: 15px; flex-grow: 1; overflow-y: auto; }
+.room-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-/* ... ቀድሞ የነበሩት ይቆዩና እነዚህን ጨምር ... */
+/* Bottom Nav */
+.bottom-nav { background: white; height: 60px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; position: fixed; bottom: 0; width: 100%; }
+.mic-btn-main { background: var(--hala-cyan); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; transform: translateY(-20px); border: 5px solid white; }
 
-.gift-modal { display: none; position: fixed; bottom: 0; width: 100%; height: 50%; background: #1a1a2e; border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 1000; animation: slideUp 0.3s ease; }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+/* Voice Room */
+#voice-room { background: linear-gradient(#19d4c4, #f8f9fa); }
+.room-top { padding: 20px; display: flex; justify-content: space-between; align-items: center; color: white; }
+.voice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px; }
+.seat-circle { width: 65px; height: 65px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px dashed white; }
+.active-speaker { border: 2px solid #ff4dff; animation: pulse 1s infinite; }
 
-.gift-content { padding: 20px; text-align: center; }
-.gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
-.gift-item { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; cursor: pointer; }
-.gift-item span { font-size: 24px; }
-.gift-item p { font-size: 12px; color: gold; margin-top: 5px; }
-.close-gift { margin-top: 20px; background: #ff0055; border: none; color: white; padding: 10px 30px; border-radius: 20px; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 77, 255, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 77, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 77, 255, 0); } }
 
-/* ቻት ስክሮል እንዲያደርግ */
-.chat-box { overflow-y: scroll; display: flex; flex-direction: column; }
+/* Sidebar */
+.sidebar { position: fixed; right: -200px; top: 100px; width: 180px; background: white; padding: 10px; border-radius: 10px 0 0 10px; transition: 0.3s; box-shadow: -2px 0 10px rgba(0,0,0,0.1); }
+.sidebar.open { right: 0; }
+.task-item { font-size: 12px; border-bottom: 1px solid #eee; padding: 5px 0; }
