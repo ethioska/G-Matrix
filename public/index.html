@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G-Matrix Gaming | ዘመናዊ የጨዋታ መድረክ</title>
-    <link rel="stylesheet" href="style.css">
+    <title>G-Matrix Gaming</title>
+    <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -12,16 +12,19 @@
         <div class="logo">G-MATRIX</div>
         <div class="user-info">
             <span id="balance">Br 20.00</span>
-            <button onclick="showDeposit()" class="deposit-btn">ተቀማጭ (Deposit)</button>
+            <button onclick="showDeposit()" class="deposit-btn">Deposit</button>
         </div>
     </header>
 
-    <section class="hero">
-        <h1>እንኳን ወደ G-Matrix በደህና መጡ!</h1>
-        <p>ምርጥ የSmartSoft ጨዋታዎችን እዚህ ያግኙ።</p>
+    <!-- ጨዋታው የሚከፈትበት ቦታ (Iframe Section) -->
+    <section id="game-display-section" style="display:none; padding: 20px; text-align: center;">
+        <button onclick="closeGame()" style="background:red; color:white; border:none; padding:10px; margin-bottom:10px; border-radius:5px; cursor:pointer;">ጨዋታውን ዝጋ</button>
+        <div id="iframe-wrapper">
+            <!-- እዚህ ውስጥ ጨዋታው በIframe ይገባል -->
+        </div>
     </section>
 
-    <main class="games-grid">
+    <main class="games-grid" id="main-games-list">
         <div class="game-card">
             <img src="https://smartsoftgaming.com/Images/Games/JetX.png" alt="JetX">
             <h3>JetX</h3>
@@ -32,22 +35,17 @@
             <h3>Balloon</h3>
             <button onclick="playGame('balloon')" class="play-btn">አሁን ተጫወት</button>
         </div>
-        <div class="game-card">
-            <img src="https://smartsoftgaming.com/Images/Games/FootballX.png" alt="FootballX">
-            <h3>Football X</h3>
-            <button onclick="playGame('footballx')" class="play-btn">አሁን ተጫወት</button>
-        </div>
     </main>
 
     <div id="depositModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <i class="fas fa-tools icon-large"></i>
-            <h2>ይቅርታ!</h2>
-            <p>የተቀማጭ ስርዓቱ (Deposit system) በግንባታ ላይ ነው በቅርብ ቀን ይጠብቁን።</p>
+            <i class="fas fa-tools" style="font-size: 50px; color: #ff0055;"></i>
+            <h2>በቅርብ ቀን!</h2>
+            <p>የተቀማጭ ስርዓቱ በግንባታ ላይ ነው።</p>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>
