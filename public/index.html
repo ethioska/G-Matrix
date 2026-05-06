@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G-Matrix Gaming | ዘመናዊ የጨዋታ መድረክ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">G-MATRIX</div>
+        <div class="user-info">
+            <span id="balance">Br 20.00</span>
+            <button onclick="showDeposit()" class="deposit-btn">ተቀማጭ (Deposit)</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>እንኳን ወደ G-Matrix በደህና መጡ!</h1>
+        <p>ምርጥ የSmartSoft ጨዋታዎችን እዚህ ያግኙ።</p>
+    </section>
+
+    <main class="games-grid">
+        <div class="game-card">
+            <img src="https://smartsoftgaming.com/Images/Games/JetX.png" alt="JetX">
+            <h3>JetX</h3>
+            <button onclick="playGame('jetx')" class="play-btn">አሁን ተጫወት</button>
+        </div>
+        <div class="game-card">
+            <img src="https://smartsoftgaming.com/Images/Games/Balloon.png" alt="Balloon">
+            <h3>Balloon</h3>
+            <button onclick="playGame('balloon')" class="play-btn">አሁን ተጫወት</button>
+        </div>
+        <div class="game-card">
+            <img src="https://smartsoftgaming.com/Images/Games/FootballX.png" alt="FootballX">
+            <h3>Football X</h3>
+            <button onclick="playGame('footballx')" class="play-btn">አሁን ተጫወት</button>
+        </div>
+    </main>
+
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <i class="fas fa-tools icon-large"></i>
+            <h2>ይቅርታ!</h2>
+            <p>የተቀማጭ ስርዓቱ (Deposit system) በግንባታ ላይ ነው በቅርብ ቀን ይጠብቁን።</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
