@@ -3,193 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G-Matrix | Hala Style</title>
+    <title>G-Matrix | Live Voice</title>
+    <!-- Agora SDK ለድምፅ ውይይት -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.11.0.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* CSS እዚሁ ተካቷል */
         :root { --hala: #22e1d1; --bg: #f0f2f5; }
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); overflow: hidden; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); overflow: hidden; }
         .page { display: none; height: 100vh; flex-direction: column; position: relative; }
         .active { display: flex; }
 
         /* Header */
-        .hala-header { background: var(--hala); padding: 15px; display: flex; justify-content: space-between; color: white; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .tabs span { margin-right: 15px; font-weight: bold; opacity: 0.8; cursor: pointer; }
-        .active-tab { opacity: 1 !important; border-bottom: 3px solid white; padding-bottom: 5px; }
+        .hala-header { background: var(--hala); padding: 15px; display: flex; justify-content: space-between; color: white; align-items: center; }
+        .user-coins { font-weight: bold; background: rgba(0,0,0,0.1); padding: 5px 12px; border-radius: 20px; }
 
         /* Room List */
-        .room-list { flex-grow: 1; padding: 15px; overflow-y: auto; padding-bottom: 80px; }
-        .room-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .room-info h3 { margin: 0; font-size: 16px; color: #333; }
-        .room-info p { margin: 5px 0 0; font-size: 12px; color: #888; }
+        .room-list { flex-grow: 1; padding: 15px; overflow-y: auto; }
+        .room-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; z-index: 10; }
-        .bottom-nav i { font-size: 22px; color: #ccc; cursor: pointer; }
-        .active-icon { color: var(--hala) !important; }
-        .mic-btn-main { background: var(--hala); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 26px; transform: translateY(-25px); border: 5px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-
-        /* Voice Room Style */
+        /* Voice Room */
         #room-page { background: linear-gradient(180deg, var(--hala) 0%, #ffffff 40%); }
-        .room-top { padding: 15px; display: flex; justify-content: space-between; color: white; align-items: center; }
-        .voice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px; justify-items: center; }
-        .seat { width: 60px; height: 60px; background: rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255,255,255,0.6); position: relative; }
-        .host { width: 75px; height: 75px; background: white; border: 3px solid #ff4dff; grid-column: span 4; margin-bottom: 10px; box-shadow: 0 0 15px rgba(255,77,255,0.5); }
-        .seat span { position: absolute; bottom: -20px; font-size: 10px; color: #555; }
-
+        .voice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px; }
+        .seat { width: 60px; height: 60px; background: rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px dashed white; color: white; }
+        .host { width: 80px; height: 80px; background: white; border: 3px solid #ff4dff; grid-column: span 4; justify-self: center; color: var(--hala); font-weight: bold; }
+        
         /* Chat Area */
-        .chat-area { flex-grow: 1; padding: 15px; overflow-y: auto; background: rgba(255,255,255,0.5); margin: 20px 15px; border-radius: 15px; }
-        .msg { margin-bottom: 8px; font-size: 14px; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-area { flex-grow: 1; padding: 15px; overflow-y: auto; background: rgba(255,255,255,0.6); margin: 10px; border-radius: 15px; }
+        .msg { margin-bottom: 5px; font-size: 14px; }
 
-        /* Footer */
-        .footer { padding: 10px 15px; background: white; display: flex; align-items: center; gap: 10px; padding-bottom: 25px; }
-        .footer input { flex-grow: 1; border: none; background: #f0f2f5; padding: 12px 18px; border-radius: 25px; outline: none; }
-        .gift-btn { color: gold; font-size: 26px; cursor: pointer; }
+        /* Footer Controls */
+        .footer { padding: 15px; background: white; display: flex; align-items: center; gap: 15px; }
+        .footer input { flex-grow: 1; border: none; background: #f0f2f5; padding: 12px; border-radius: 20px; outline: none; }
+        .mic-active { color: var(--hala) !important; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-        /* Reward Page */
-        .task-card { background: white; margin: 15px; padding: 20px; border-radius: 15px; border-left: 5px solid var(--hala); display: flex; justify-content: space-between; align-items: center; }
-        .claim-btn { background: var(--hala); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; }
+        /* Navigation */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; }
+        .mic-btn-main { background: var(--hala); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; transform: translateY(-20px); border: 5px solid white; }
 
-        /* Gift Modal */
-        .modal { display: none; position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; border-radius: 25px 25px 0 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.2); z-index: 1000; }
-        .gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center; margin: 20px 0; }
-        .gift-item { background: #f9f9f9; padding: 10px; border-radius: 15px; cursor: pointer; }
-        .gift-item:active { background: #eee; }
+        /* Modal */
+        .modal { display: none; position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; border-radius: 25px 25px 0 0; z-index: 1000; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
-    <!-- 1. HOME PAGE -->
+    <!-- HOME PAGE -->
     <div id="home-page" class="page active">
         <header class="hala-header">
-            <div class="tabs"><span class="active-tab">Hot 🔥</span><span>Follow</span></div>
-            <div style="font-weight: bold;"><i class="fas fa-coins" style="color:gold;"></i> <span id="balance-home">500</span></div>
+            <div style="font-weight:bold;">Hala Live</div>
+            <div class="user-coins"><i class="fas fa-coins" style="color:gold;"></i> <span id="balance-home">500</span></div>
         </header>
         <div class="room-list">
-            <div class="room-card" onclick="enterRoom('የኢትዮጵያ ምርጦች 🇪🇹', 'Sara')">
-                <div class="room-info"><h3>የኢትዮጵያ ምርጦች 🇪🇹</h3><p>Host: Sara | 1.2k online</p></div>
-                <i class="fas fa-chevron-right" style="color:#ccc;"></i>
-            </div>
-            <div class="room-card" onclick="enterRoom('Hala Music Night 🎵', 'Alex')">
-                <div class="room-info"><h3>Hala Music Night 🎵</h3><p>Host: Alex | 850 online</p></div>
-                <i class="fas fa-chevron-right" style="color:#ccc;"></i>
+            <div class="room-card" onclick="enterRoom('የኢትዮጵያ ምርጦች')">
+                <div><b>የኢትዮጵያ ምርጦች 🇪🇹</b><br><small>1.2k online</small></div>
+                <i class="fas fa-microphone" style="color: var(--hala);"></i>
             </div>
         </div>
         <nav class="bottom-nav">
-            <i class="fas fa-home active-icon" onclick="showPage('home-page')"></i>
-            <div class="mic-btn-main" onclick="enterRoom('My Personal Room', 'Me')"><i class="fas fa-microphone"></i></div>
-            <i class="fas fa-gem" onclick="showPage('task-page')"></i>
+            <i class="fas fa-home" style="color:var(--hala)"></i>
+            <div class="mic-btn-main" onclick="enterRoom('My Room')"><i class="fas fa-microphone"></i></div>
+            <i class="fas fa-tasks" onclick="showPage('task-page')"></i>
         </nav>
     </div>
 
-    <!-- 2. VOICE ROOM -->
+    <!-- VOICE ROOM PAGE -->
     <div id="room-page" class="page">
-        <div class="room-top">
-            <i class="fas fa-arrow-left" onclick="showPage('home-page')"></i>
-            <h3 id="room-title">Room Name</h3>
-            <div style="background: rgba(0,0,0,0.2); padding: 5px 12px; border-radius: 20px; font-size: 12px;">ID: 778899</div>
+        <div style="padding:15px; display:flex; justify-content:space-between; color:white;">
+            <i class="fas fa-chevron-left" onclick="leaveAndExit()"></i>
+            <b id="room-title">Room</b>
+            <i class="fas fa-share-alt"></i>
         </div>
         <div class="voice-grid">
-            <div class="seat host"><i class="fas fa-user-tie" style="font-size: 30px; color: var(--hala);"></i><span>Host</span></div>
+            <div class="seat host" id="host-seat"><i class="fas fa-crown"></i></div>
             <div class="seat">1</div><div class="seat">2</div><div class="seat">3</div>
             <div class="seat">4</div><div class="seat">5</div><div class="seat">6</div><div class="seat">7</div>
         </div>
-        <div class="chat-area" id="chat-box">
-            <div class="msg" style="color: var(--hala); font-weight: bold;">[System]: እንኳን ደህና መጡ!</div>
-        </div>
+        <div class="chat-area" id="chat-box"></div>
         <div class="footer">
-            <i class="fas fa-microphone-slash" style="color: #888;"></i>
-            <input type="text" id="chat-input" placeholder="መልእክት ይጻፉ..." onkeypress="handleKeyPress(event)">
-            <i class="fas fa-gift gift-btn" onclick="openGifts()"></i>
+            <i class="fas fa-microphone-slash" id="mic-icon" onclick="toggleMic()" style="font-size:20px; color:#888; cursor:pointer;"></i>
+            <input type="text" id="chat-input" placeholder="መልእክት ይጻፉ..." onkeypress="handleChat(event)">
+            <i class="fas fa-gift" onclick="openGifts()" style="color:gold; font-size:24px;"></i>
         </div>
     </div>
 
-    <!-- 3. TASK PAGE -->
+    <!-- TASK PAGE -->
     <div id="task-page" class="page">
         <header class="hala-header">
-            <div onclick="showPage('home-page')"><i class="fas fa-arrow-left"></i> Rewards</div>
-            <div><i class="fas fa-coins" style="color:gold;"></i> <span id="balance-task">500</span></div>
+            <i class="fas fa-arrow-left" onclick="showPage('home-page')"></i>
+            <div>Rewards</div>
+            <div></div>
         </header>
-        <div class="task-card">
-            <div><b>30 ደቂቃ ስርጭት</b><br><small style="color:#888;">በየቀኑ የሚታደስ</small></div>
-            <button class="claim-btn" onclick="claim(50)">Claim 50</button>
+        <div style="padding:20px; background:white; margin:15px; border-radius:15px; display:flex; justify-content:space-between;">
+            <div><b>Daily Check-in</b><br><small>+50 Coins</small></div>
+            <button onclick="claim(50)" style="background:var(--hala); border:none; color:white; padding:5px 15px; border-radius:15px;">Claim</button>
         </div>
-        <div class="task-card">
-            <div><b>Room Bombing (Top 3)</b><br><small style="color:#888;">በየ 3 ሰአቱ የሚሰጥ</small></div>
-            <button class="claim-btn" style="background:#ccc;">Claim</button>
-        </div>
-        <nav class="bottom-nav">
-            <i class="fas fa-home" onclick="showPage('home-page')"></i>
-            <div class="mic-btn-main" onclick="enterRoom('My Room', 'Me')"><i class="fas fa-microphone"></i></div>
-            <i class="fas fa-gem active-icon"></i>
-        </nav>
     </div>
 
     <!-- GIFT MODAL -->
     <div id="gift-modal" class="modal">
-        <h4 style="margin-top:0; text-align:center; color:#555;">ስጦታ ይላኩ</h4>
-        <div class="gift-grid">
-            <div class="gift-item" onclick="sendGift('🌹', 10)">🌹<br><small>10</small></div>
-            <div class="gift-item" onclick="sendGift('💎', 50)">💎<br><small>50</small></div>
-            <div class="gift-item" onclick="sendGift('👑', 100)">👑<br><small>100</small></div>
-            <div class="gift-item" onclick="sendGift('🚀', 500)">🚀<br><small>500</small></div>
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; text-align:center;">
+            <div onclick="sendGift('🌹', 10)">🌹<br>10</div>
+            <div onclick="sendGift('💎', 50)">💎<br>50</div>
+            <div onclick="sendGift('👑', 100)">👑<br>100</div>
+            <div onclick="sendGift('🚀', 500)">🚀<br>500</div>
         </div>
-        <button onclick="closeGifts()" style="width:100%; padding:12px; border:none; background:#eee; border-radius:15px; font-weight:bold;">ዝጋ</button>
+        <button onclick="closeGifts()" style="width:100%; margin-top:20px; border:none; padding:10px; border-radius:10px;">ዝጋ</button>
     </div>
 
     <script>
+        // --- AGORA CONFIG ---
+        const APP_ID = "699e23ee48c64b02b5471b212a486e29"; 
+        const CHANNEL = "main-room";
+        const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+        let localTracks = { audioTrack: null };
+
         let balance = 500;
 
+        async function enterRoom(name) {
+            document.getElementById('room-title').innerText = name;
+            showPage('room-page');
+            try {
+                await client.join(APP_ID, CHANNEL, null, null);
+                localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                await client.publish([localTracks.audioTrack]);
+                addMsg("System", "ከድምፅ ጋር ተገናኝተዋል! 🎙️", "green");
+            } catch (e) {
+                console.error(e);
+                addMsg("System", "ማይክሮፎን ማግኘት አልተቻለም!", "red");
+            }
+        }
+
+        async function leaveAndExit() {
+            if(localTracks.audioTrack) {
+                localTracks.audioTrack.stop();
+                localTracks.audioTrack.close();
+            }
+            await client.leave();
+            showPage('home-page');
+        }
+
+        let isMuted = false;
+        async function toggleMic() {
+            if(!localTracks.audioTrack) return;
+            if(!isMuted) {
+                await localTracks.audioTrack.setEnabled(false);
+                isMuted = true;
+                document.getElementById('mic-icon').className = "fas fa-microphone-slash";
+                document.getElementById('mic-icon').style.color = "#888";
+            } else {
+                await localTracks.audioTrack.setEnabled(true);
+                isMuted = false;
+                document.getElementById('mic-icon').className = "fas fa-microphone mic-active";
+                document.getElementById('mic-icon').style.color = "#22e1d1";
+            }
+        }
+
+        client.on("user-published", async (user, mediaType) => {
+            await client.subscribe(user, mediaType);
+            if (mediaType === "audio") user.audioTrack.play();
+        });
+
+        // --- UI FUNCTIONS ---
         function showPage(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        function enterRoom(name, host) {
-            document.getElementById('room-title').innerText = name;
-            showPage('room-page');
-            setTimeout(() => addMsg(host, "ሰላም! እንኳን መጣህ ✨", "green"), 1000);
-            setTimeout(() => addMsg("System", "አዲስ ስጦታ ተላከ 🌹", "purple"), 4000);
-        }
-
-        function handleKeyPress(e) {
-            if (e.key === 'Enter' && e.target.value.trim() !== "") {
+        function handleChat(e) {
+            if (e.key === 'Enter' && e.target.value !== "") {
                 addMsg("እኔ", e.target.value, "#007bff");
                 e.target.value = "";
             }
         }
 
-        function addMsg(user, text, color) {
+        function addMsg(u, m, c) {
             const box = document.getElementById('chat-box');
-            const div = document.createElement('div');
-            div.className = 'msg';
-            div.innerHTML = `<b style="color:${color}">${user}:</b> ${text}`;
-            box.appendChild(div);
+            box.innerHTML += `<div class="msg"><b style="color:${c || '#555'}">${u}:</b> ${m}</div>`;
             box.scrollTop = box.scrollHeight;
         }
 
         function openGifts() { document.getElementById('gift-modal').style.display = 'block'; }
         function closeGifts() { document.getElementById('gift-modal').style.display = 'none'; }
 
-        function sendGift(emoji, cost) {
+        function sendGift(e, cost) {
             if (balance >= cost) {
                 balance -= cost;
-                updateBalance();
-                addMsg("እኔ", `ስጦታ ላከ ${emoji}`, "gold");
+                document.getElementById('balance-home').innerText = balance;
+                addMsg("እኔ", `ስጦታ ላከ ${e}`, "orange");
                 closeGifts();
             } else { alert("በቂ ኮይን የሎትም!"); }
         }
 
         function claim(amt) {
             balance += amt;
-            updateBalance();
-            alert(amt + " ኮይን ተቀብለዋል!");
-        }
-
-        function updateBalance() {
             document.getElementById('balance-home').innerText = balance;
-            document.getElementById('balance-task').innerText = balance;
+            alert(amt + " ኮይኖች ተጨምረዋል!");
         }
     </script>
 </body>
