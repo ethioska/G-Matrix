@@ -11,7 +11,7 @@
     <header>
         <div class="logo">G-MATRIX LIVE</div>
         <div class="user-stats">
-            <span><i class="fas fa-coins" style="color:gold;"></i> 500</span>
+            <span><i class="fas fa-coins" style="color:gold;"></i> <span id="coin-count">500</span></span>
         </div>
     </header>
 
@@ -22,29 +22,43 @@
         </div>
 
         <div class="voice-seats">
-            <div class="seat active-mic">
+            <div class="seat active-mic" onclick="joinSeat(0)">
                 <div class="avatar"><i class="fas fa-user-tie"></i></div>
                 <span>Host</span>
             </div>
-            <!-- ለተቀሩት 7 መቀመጫዎች -->
-            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 1</span></div>
-            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 2</span></div>
-            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 3</span></div>
-            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 4</span></div>
-            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 5</span></div>
-            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 6</span></div>
-            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 7</span></div>
+            <!-- Seats -->
+            <div class="seat" onclick="joinSeat(1)"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 1</span></div>
+            <div class="seat" onclick="joinSeat(2)"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 2</span></div>
+            <div class="seat" onclick="joinSeat(3)"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 3</span></div>
+            <div class="seat" onclick="joinSeat(4)"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 4</span></div>
+            <div class="seat" onclick="joinSeat(5)"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 5</span></div>
+            <div class="seat" onclick="joinSeat(6)"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 6</span></div>
+            <div class="seat" onclick="joinSeat(7)"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 7</span></div>
         </div>
 
         <div class="chat-box" id="chat-messages">
-            <p><span style="color:#ff0055;">[System]:</span> እንኳን ወደ G-Matrix በደህና መጡ! ህግና ደንብ ያክብሩ።</p>
+            <p><span style="color:#ff0055;">[System]:</span> እንኳን ወደ G-Matrix በደህና መጡ!</p>
         </div>
 
         <div class="controls">
-            <button class="icon-btn" onclick="toggleMic()"><i class="fas fa-microphone-slash"></i></button>
-            <input type="text" placeholder="መልእክት ይጻፉ..." id="chat-input">
+            <button class="icon-btn" onclick="toggleMic()" id="mic-btn"><i class="fas fa-microphone-slash"></i></button>
+            <input type="text" placeholder="መልእክት ይጻፉ..." id="chat-input" onkeypress="handleKeyPress(event)">
             <button class="icon-btn send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-            <button class="icon-btn gift" onclick="showGifts()"><i class="fas fa-gift"></i></button>
+            <button class="icon-btn gift" onclick="toggleGiftModal()"><i class="fas fa-gift"></i></button>
+        </div>
+    </div>
+
+    <!-- ስጦታ መላኪያ መስኮት -->
+    <div id="giftModal" class="gift-modal">
+        <div class="gift-content">
+            <h3>ስጦታ ይላኩ</h3>
+            <div class="gift-grid">
+                <div class="gift-item" onclick="sendGift('🌹', 10)"><span>🌹</span><p>10</p></div>
+                <div class="gift-item" onclick="sendGift('💎', 50)"><span>💎</span><p>50</p></div>
+                <div class="gift-item" onclick="sendGift('👑', 100)"><span>👑</span><p>100</p></div>
+                <div class="gift-item" onclick="sendGift('🚗', 500)"><span>🚗</span><p>500</p></div>
+            </div>
+            <button onclick="toggleGiftModal()" class="close-gift">ዝጋ</button>
         </div>
     </div>
 
