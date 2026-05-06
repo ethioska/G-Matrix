@@ -1,37 +1,27 @@
-:root {
-    --hala-cyan: #22e1d1;
-    --hala-bg: #f8f9fa;
-    --hala-dark: #1a1a1a;
-}
-
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--hala-bg); }
-
+:root { --main-color: #22e1d1; --bg-light: #f4f7f6; }
+body { margin: 0; font-family: sans-serif; background: var(--bg-light); overflow: hidden; }
 .page { display: none; height: 100vh; flex-direction: column; }
 .active { display: flex; }
 
-/* Header */
-.hala-header { background: linear-gradient(90deg, #19d4c4, #22e1d1); padding: 15px; display: flex; justify-content: space-between; color: white; }
-.tabs span { margin-right: 15px; font-weight: bold; opacity: 0.7; }
-.active-tab { opacity: 1 !important; border-bottom: 2px solid white; }
-
-/* Room List */
-.room-list { padding: 15px; flex-grow: 1; overflow-y: auto; }
-.room-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+/* Home Header */
+.hala-header { background: var(--main-color); padding: 15px; display: flex; justify-content: space-between; color: white; font-weight: bold; }
 
 /* Bottom Nav */
-.bottom-nav { background: white; height: 60px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; position: fixed; bottom: 0; width: 100%; }
-.mic-btn-main { background: var(--hala-cyan); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; transform: translateY(-20px); border: 5px solid white; }
+.bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; }
+.mic-btn-main { background: var(--main-color); width: 55px; height: 55px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-top: -30px; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-/* Voice Room */
-#voice-room { background: linear-gradient(#19d4c4, #f8f9fa); }
-.room-top { padding: 20px; display: flex; justify-content: space-between; align-items: center; color: white; }
-.voice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px; }
-.seat-circle { width: 65px; height: 65px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px dashed white; }
-.active-speaker { border: 2px solid #ff4dff; animation: pulse 1s infinite; }
+/* Room Styles */
+#room-page { background: linear-gradient(to bottom, #22e1d1, #ffffff); }
+.seats-container { padding: 20px; display: flex; flex-direction: column; align-items: center; }
+.seats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
+.avatar { width: 50px; height: 50px; background: #eee; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; }
+.active-mic .avatar { border-color: #ff0055; box-shadow: 0 0 10px #ff0055; }
 
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 77, 255, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 77, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 77, 255, 0); } }
+/* Chat & Footer */
+.chat-display { flex-grow: 1; padding: 15px; overflow-y: auto; font-size: 14px; }
+.room-footer { padding: 10px; display: flex; align-items: center; background: white; gap: 10px; }
+.room-footer input { flex-grow: 1; border: none; background: #f0f0f0; padding: 10px; border-radius: 20px; outline: none; }
 
-/* Sidebar */
-.sidebar { position: fixed; right: -200px; top: 100px; width: 180px; background: white; padding: 10px; border-radius: 10px 0 0 10px; transition: 0.3s; box-shadow: -2px 0 10px rgba(0,0,0,0.1); }
-.sidebar.open { right: 0; }
-.task-item { font-size: 12px; border-bottom: 1px solid #eee; padding: 5px 0; }
+/* Modal */
+.modal { display: none; position: fixed; bottom: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); padding: 20px; z-index: 100; }
+.gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
