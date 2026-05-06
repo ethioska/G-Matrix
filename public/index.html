@@ -3,83 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G-Matrix | Hala Style</title>
-    <link rel="stylesheet" href="/style.css">
+    <title>G-Matrix Live</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-    <!-- 1. HOME PAGE (የተደረደሩ ሩሞች) -->
+    <!-- 1. HOME PAGE -->
     <div id="home-page" class="page active">
         <header class="hala-header">
-            <div class="tabs">
-                <span>Follow</span>
-                <span class="active-tab">Hot</span>
-            </div>
-            <div class="user-coins"><i class="fas fa-coins"></i> <span id="balance">500</span></div>
+            <div class="tabs"><span class="active-tab">Hot 🔥</span><span>Follow</span></div>
+            <div class="user-coins"><i class="fas fa-coins"></i> <span id="main-balance">500</span></div>
         </header>
-
-        <div class="search-bar"><i class="fas fa-search"></i> Search Room ID...</div>
-
-        <div class="room-list">
-            <div class="room-card" onclick="goToRoom('የአቢሲኒያ ፓርቲ', 'Host: Abdi')">
-                <div class="room-info">
-                    <h3>የአቢሲኒያ ፓርቲ 🇪🇹</h3>
-                    <p>Host: Abdi | <i class="fas fa-users"></i> 2.5k</p>
-                </div>
-            </div>
-            <div class="room-card" onclick="goToRoom('Hala Music', 'Host: Sara')">
-                <div class="room-info">
-                    <h3>Hala Music 🎵</h3>
-                    <p>Host: Sara | <i class="fas fa-users"></i> 1.2k</p>
-                </div>
-            </div>
+        <div class="room-list" id="room-list">
+            <!-- ሩሞች እዚህ ጋር በJS ይደረደራሉ -->
         </div>
-
         <nav class="bottom-nav">
             <i class="fas fa-home active-icon"></i>
-            <div class="mic-btn-main" onclick="goToRoom('My Room', 'Owner')"><i class="fas fa-microphone"></i></div>
-            <i class="fas fa-user"></i>
+            <div class="mic-btn-main" onclick="openMyRoom()"><i class="fas fa-microphone"></i></div>
+            <i class="fas fa-tasks" onclick="showPage('task-page')"></i>
         </nav>
     </div>
 
-    <!-- 2. VOICE ROOM PAGE (የድምጽ ሩም) -->
-    <div id="voice-room" class="page">
+    <!-- 2. VOICE ROOM PAGE -->
+    <div id="room-page" class="page">
         <div class="room-top">
-            <i class="fas fa-chevron-left" onclick="goHome()"></i>
-            <h2 id="active-room-name">Room Name</h2>
-            <div class="task-icon" onclick="toggleTask()">🎁</div>
+            <i class="fas fa-chevron-left" onclick="showPage('home-page')"></i>
+            <h3 id="active-room-title">የአማርኛ ሩም</h3>
+            <div class="room-icons"><span>🎁</span></div>
         </div>
-
-        <div class="voice-grid">
-            <div class="seat-circle active-speaker"><i class="fas fa-user-tie"></i></div>
-            <div class="seat-circle"><i class="fas fa-plus"></i></div>
-            <div class="seat-circle"><i class="fas fa-plus"></i></div>
-            <div class="seat-circle"><i class="fas fa-plus"></i></div>
-        </div>
-
-        <div class="chat-area" id="room-chat"></div>
-
-        <div class="room-controls">
-            <i class="fas fa-microphone-slash"></i>
-            <input type="text" placeholder="መልእክት..." id="chat-input" onkeypress="checkEnter(event)">
-            <i class="fas fa-gift gift-icon" onclick="openGifts()"></i>
-        </div>
-
-        <!-- Task Sidebar (ታስክ) -->
-        <div id="task-sidebar" class="sidebar">
-            <h4>Daily Tasks</h4>
-            <div class="task-item">
-                <p>30 Min Stream</p>
-                <button onclick="claim(10)">Claim 10</button>
+        <div class="seats-container">
+            <div class="seat host active-mic"><div class="avatar">H</div><span>Host</span></div>
+            <div class="seats-grid" id="guest-seats">
+                <!-- 7 መቀመጫዎች -->
             </div>
-            <div class="task-item">
-                <p>Room Bombing (Top 3)</p>
-                <small>Every 3 Hours</small>
+        </div>
+        <div class="chat-display" id="chat-box"></div>
+        <div class="room-footer">
+            <i class="fas fa-microphone-slash" id="mic-toggle" onclick="toggleMic()"></i>
+            <input type="text" id="chat-input" placeholder="አንድ ነገር ይበሉ..." onkeypress="handleChat(event)">
+            <i class="fas fa-gift gift-trigger" onclick="openGiftPanel()"></i>
+        </div>
+    </div>
+
+    <!-- 3. TASK & REWARD PAGE -->
+    <div id="task-page" class="page">
+        <div class="task-header">
+            <i class="fas fa-arrow-left" onclick="showPage('home-page')"></i>
+            <h2>Daily Rewards</h2>
+        </div>
+        <div class="task-list">
+            <div class="task-card">
+                <p>30 ደቂቃ ስትሪም ማድረግ</p>
+                <button onclick="claimCoins(50)">Claim 50</button>
+            </div>
+            <div class="task-card">
+                <p>Top 3 Room Bombing</p>
+                <small>በየ 3 ሰአቱ የሚታደስ</small>
             </div>
         </div>
     </div>
 
-    <script src="/script.js"></script>
+    <!-- GIFT PANEL (POPUP) -->
+    <div id="gift-panel" class="modal">
+        <div class="modal-content">
+            <h4>ስጦታ ይላኩ</h4>
+            <div class="gift-grid">
+                <div onclick="sendGift('🌹', 10)">🌹<br><small>10</small></div>
+                <div onclick="sendGift('💎', 50)">💎<br><small>50</small></div>
+                <div onclick="sendGift('👑', 100)">👑<br><small>100</small></div>
+                <div onclick="sendGift('🚀', 500)">🚀<br><small>500</small></div>
+            </div>
+            <button onclick="closeGiftPanel()">ዝጋ</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
