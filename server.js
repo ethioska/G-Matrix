@@ -10,5 +10,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`G-Matrix Server running on port ${PORT}`);
+    console.log(`Voice Party Room is live on port ${PORT}`);
 });
