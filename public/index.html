@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G-Matrix Voice Party</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">G-MATRIX LIVE</div>
+        <div class="user-stats">
+            <span><i class="fas fa-coins" style="color:gold;"></i> 500</span>
+        </div>
+    </header>
+
+    <div class="room-container">
+        <div class="room-header">
+            <h2>የአማርኛ ጨዋታ ሩም 🇪🇹</h2>
+            <p><i class="fas fa-users"></i> 124 Online</p>
+        </div>
+
+        <div class="voice-seats">
+            <div class="seat active-mic">
+                <div class="avatar"><i class="fas fa-user-tie"></i></div>
+                <span>Host</span>
+            </div>
+            <!-- ለተቀሩት 7 መቀመጫዎች -->
+            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 1</span></div>
+            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 2</span></div>
+            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 3</span></div>
+            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 4</span></div>
+            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 5</span></div>
+            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 6</span></div>
+            <div class="seat"><div class="avatar"><i class="fas fa-plus"></i></div><span>Seat 7</span></div>
+        </div>
+
+        <div class="chat-box" id="chat-messages">
+            <p><span style="color:#ff0055;">[System]:</span> እንኳን ወደ G-Matrix በደህና መጡ! ህግና ደንብ ያክብሩ።</p>
+        </div>
+
+        <div class="controls">
+            <button class="icon-btn" onclick="toggleMic()"><i class="fas fa-microphone-slash"></i></button>
+            <input type="text" placeholder="መልእክት ይጻፉ..." id="chat-input">
+            <button class="icon-btn send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            <button class="icon-btn gift" onclick="showGifts()"><i class="fas fa-gift"></i></button>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>
