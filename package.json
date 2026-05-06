@@ -1,7 +1,7 @@
 {
-  "name": "g-matrix",
+  "name": "g-matrix-voice",
   "version": "1.0.0",
-  "description": "Modern Gaming Platform",
+  "description": "Voice Party Room Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
