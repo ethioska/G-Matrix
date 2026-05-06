@@ -1,57 +1,39 @@
 let coins = 500;
-let isMicOn = false;
 
-function sendMessage() {
-    let input = document.getElementById('chat-input');
-    let chatBox = document.getElementById('chat-messages');
-    
-    if (input.value.trim() !== "") {
+function goToRoom(name, host) {
+    document.getElementById('home-page').classList.remove('active');
+    document.getElementById('voice-room').classList.add('active');
+    document.getElementById('active-room-name').innerText = name;
+}
+
+function goHome() {
+    document.getElementById('voice-room').classList.remove('active');
+    document.getElementById('home-page').classList.add('active');
+}
+
+function toggleTask() {
+    document.getElementById('task-sidebar').classList.toggle('open');
+}
+
+function checkEnter(e) {
+    if (e.key === 'Enter') {
+        let input = document.getElementById('chat-input');
+        let chat = document.getElementById('room-chat');
         let p = document.createElement('p');
-        p.style.marginBottom = "8px";
-        p.innerHTML = `<span style="color:#007bff; font-weight:bold;">እኔ:</span> ${input.value}`;
-        chatBox.appendChild(p);
-        
+        p.innerHTML = `<b>You:</b> ${input.value}`;
+        chat.appendChild(p);
         input.value = "";
-        chatBox.scrollTop = chatBox.scrollHeight;
+        chat.scrollTop = chat.scrollHeight;
     }
 }
 
-// Enter ሲጫን እንዲልክ
-function handleKeyPress(e) {
-    if (e.key === 'Enter') sendMessage();
+function claim(amount) {
+    coins += amount;
+    document.getElementById('balance').innerText = coins;
+    alert("Br " + amount + " Claimed!");
 }
 
-function toggleMic() {
-    isMicOn = !isMicOn;
-    let btn = document.getElementById('mic-btn');
-    btn.innerHTML = isMicOn ? '<i class="fas fa-microphone" style="color:#ff0055;"></i>' : '<i class="fas fa-microphone-slash"></i>';
-}
-
-function toggleGiftModal() {
-    let modal = document.getElementById('giftModal');
-    modal.style.display = (modal.style.display === "block") ? "none" : "block";
-}
-
-function sendGift(emoji, cost) {
-    if (coins >= cost) {
-        coins -= cost;
-        document.getElementById('coin-count').innerText = coins;
-        
-        let chatBox = document.getElementById('chat-messages');
-        let p = document.createElement('p');
-        p.style.background = "rgba(255, 215, 0, 0.1)";
-        p.style.padding = "5px";
-        p.style.borderRadius = "5px";
-        p.innerHTML = `🌟 <span style="color:gold;">እኔ ${emoji} ለHost ላክኩ!</span>`;
-        chatBox.appendChild(p);
-        
-        toggleGiftModal();
-        chatBox.scrollTop = chatBox.scrollHeight;
-    } else {
-        alert("በቂ ኮይን የሎትም!");
-    }
-}
-
-function joinSeat(num) {
-    alert("Seat " + num + " ላይ ለመቀመጥ እየሞከሩ ነው...");
-}
+// Room Bombing Timer (Simulation)
+setInterval(() => {
+    console.log("Room Bombing gift checking...");
+}, 10800000); // 3 Hours
