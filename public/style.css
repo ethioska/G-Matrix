@@ -19,3 +19,18 @@ header { display: flex; justify-content: space-between; padding: 15px; backgroun
 .icon-btn { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 5px; }
 .icon-btn.send { color: #007bff; }
 .icon-btn.gift { color: #ffd700; }
+
+/* ... ቀድሞ የነበሩት ይቆዩና እነዚህን ጨምር ... */
+
+.gift-modal { display: none; position: fixed; bottom: 0; width: 100%; height: 50%; background: #1a1a2e; border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 1000; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.gift-content { padding: 20px; text-align: center; }
+.gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
+.gift-item { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; cursor: pointer; }
+.gift-item span { font-size: 24px; }
+.gift-item p { font-size: 12px; color: gold; margin-top: 5px; }
+.close-gift { margin-top: 20px; background: #ff0055; border: none; color: white; padding: 10px 30px; border-radius: 20px; }
+
+/* ቻት ስክሮል እንዲያደርግ */
+.chat-box { overflow-y: scroll; display: flex; flex-direction: column; }
