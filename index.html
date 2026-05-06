@@ -2,204 +2,482 @@
 <html lang="am">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G-Matrix | Professional Hala Live</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>G-Matrix | Ultimate Hala Live</title>
+    
+    <!-- External SDKs and Fonts -->
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.11.0.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
     <style>
-        :root { --hala: #22e1d1; --bg: #f8f9fa; --dark: #333; --pink: #ff4dff; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); overflow: hidden; }
-        .page { display: none; height: 100vh; flex-direction: column; }
-        .active { display: flex; }
+        :root {
+            --hala-teal: #22e1d1;
+            --hala-dark: #1a1a1a;
+            --hala-pink: #ff4dff;
+            --hala-gold: #ffd700;
+            --glass: rgba(255, 255, 255, 0.1);
+            --gradient: linear-gradient(135deg, #22e1d1 0%, #17b3a6 100%);
+        }
 
-        /* Splash Screen */
-        #splash { background: var(--hala); display: flex; align-items: center; justify-content: center; color: white; font-size: 30px; font-weight: bold; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* Header Styles */
-        .header { background: var(--hala); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
-        .coin-box { background: rgba(0,0,0,0.15); padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            color: var(--hala-dark);
+            height: 100vh;
+            overflow: hidden;
+        }
 
-        /* Profile Section */
-        .profile-bar { padding: 15px; background: white; margin-bottom: 5px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #eee; }
-        .avatar-circle { width: 50px; height: 50px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; overflow: hidden; }
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--gradient);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        .loader-logo {
+            font-size: 42px;
+            color: white;
+            font-weight: 800;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-        /* Room Cards */
-        .room-container { flex-grow: 1; padding: 15px; overflow-y: auto; background: #f0f2f5; }
-        .room-card { background: white; border-radius: 20px; padding: 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.03); border: 1px solid #eee; }
-        .room-title { font-weight: bold; font-size: 17px; margin-bottom: 4px; }
-        .room-meta { font-size: 12px; color: #888; }
+        /* --- PAGE SYSTEM --- */
+        .page {
+            display: none;
+            height: 100vh;
+            width: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            flex-direction: column;
+        }
+        .page.active { display: flex; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Live Room Page */
-        #room-page { background: linear-gradient(180deg, var(--hala) 0%, #ffffff 50%); }
-        .room-header { padding: 15px; color: white; display: flex; align-items: center; gap: 15px; }
-        .seats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px; margin-top: 10px; }
-        .seat { display: flex; flex-direction: column; align-items: center; gap: 5px; color: #555; font-size: 12px; }
-        .seat-circle { width: 55px; height: 55px; background: rgba(255,255,255,0.4); border-radius: 50%; border: 2px dashed rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; position: relative; }
-        .host-seat { grid-column: span 4; margin-bottom: 10px; }
-        .host-circle { width: 80px; height: 80px; background: white; border: 3px solid var(--pink); box-shadow: 0 0 15px rgba(255,77,255,0.4); }
+        /* --- HOME PAGE UI --- */
+        .main-header {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .logo-text { font-weight: 700; font-size: 22px; color: var(--hala-teal); }
+        .currency-display {
+            background: #fff9e6;
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #ffeeba;
+        }
 
-        /* Chat System */
-        .chat-display { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 80px; }
-        .chat-bubble { padding: 8px 15px; border-radius: 15px; font-size: 14px; max-width: 85%; animation: slideUp 0.3s ease; }
-        .my-chat { background: #e3fcf9; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .other-chat { background: white; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .category-tabs {
+            display: flex;
+            padding: 15px 20px;
+            gap: 20px;
+            overflow-x: auto;
+            background: white;
+            white-space: nowrap;
+        }
+        .tab { font-weight: 600; color: #888; position: relative; padding-bottom: 5px; }
+        .tab.active { color: var(--hala-teal); }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 3px;
+            background: var(--hala-teal);
+            border-radius: 10px;
+        }
 
-        /* Interaction Bar */
-        .action-bar { position: fixed; bottom: 0; width: 100%; background: white; padding: 12px 15px; display: flex; align-items: center; gap: 12px; border-top: 1px solid #eee; }
-        .chat-input { flex-grow: 1; background: #f1f3f4; border: none; padding: 12px; border-radius: 25px; outline: none; }
-        .mic-trigger { width: 45px; height: 45px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #777; transition: 0.3s; cursor: pointer; }
-        .mic-active { background: var(--hala); color: white; box-shadow: 0 0 10px var(--hala); animation: pulsate 1.5s infinite; }
+        .room-scroll {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            padding-bottom: 100px;
+        }
+        .room-item {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid #f0f0f0;
+            transition: transform 0.2s;
+        }
+        .room-item:active { transform: scale(0.97); }
+        .room-icon-box {
+            width: 60px; height: 60px;
+            background: var(--gradient);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        .room-details h3 { font-size: 16px; margin-bottom: 4px; }
+        .room-details p { font-size: 12px; color: #999; }
 
-        @keyframes pulsate { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- LIVE ROOM UI (THE MASTERPIECE) --- */
+        #room-page {
+            background: linear-gradient(180deg, #1ea79b 0%, #ffffff 45%);
+        }
+        .room-nav {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            align-items: center;
+        }
+        .room-info-top { display: flex; align-items: center; gap: 10px; }
+
+        .stage-area {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            justify-items: center;
+        }
+        .host-container {
+            grid-column: span 4;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .avatar-wrap {
+            position: relative;
+            width: 85px; height: 85px;
+            margin: 0 auto 8px;
+        }
+        .avatar-img {
+            width: 100%; height: 100%;
+            background: white;
+            border-radius: 50%;
+            border: 3px solid var(--hala-pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--hala-teal);
+            box-shadow: 0 0 20px rgba(255, 77, 255, 0.3);
+        }
+        .crown-icon {
+            position: absolute;
+            top: -15px; left: 50%;
+            transform: translateX(-50%);
+            color: var(--hala-gold);
+            font-size: 20px;
+        }
+        .seat-circle {
+            width: 55px; height: 55px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .live-chat-box {
+            flex-grow: 1;
+            margin: 10px 20px;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            mask-image: linear-gradient(to bottom, transparent, black 15%);
+        }
+        .chat-msg {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 15px;
+            border-radius: 18px;
+            font-size: 13px;
+            width: fit-content;
+            max-width: 85%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .bottom-controls {
+            padding: 15px 20px 30px;
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-top-left-radius: 25px;
+            border-top-right-radius: 25px;
+        }
+        .msg-input {
+            flex-grow: 1;
+            background: #f0f2f5;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+        .control-btn {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #666;
+            background: #f0f2f5;
+            cursor: pointer;
+        }
+        .btn-active { background: var(--hala-teal); color: white; box-shadow: 0 0 15px rgba(34, 225, 209, 0.4); }
+
+        /* --- FOOTER NAV --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; width: 100%;
+            height: 70px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #eee;
+            z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #ccc; font-size: 11px; }
+        .nav-item.active { color: var(--hala-teal); }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+        .center-nav {
+            width: 55px; height: 55px;
+            background: var(--gradient);
+            border-radius: 50%;
+            margin-top: -35px;
+            border: 5px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 5px 15px rgba(34, 225, 209, 0.4);
+        }
     </style>
 </head>
 <body>
 
     <!-- Splash Screen -->
-    <div id="splash" class="page active">G-MATRIX</div>
+    <div id="splash-screen">
+        <div class="loader-logo">G-MATRIX</div>
+        <div style="color: white; font-size: 12px; letter-spacing: 2px;">LOADING...</div>
+    </div>
 
     <!-- Home Page -->
     <div id="home-page" class="page">
-        <header class="header">
-            <div style="font-size: 20px; font-weight: 900;">Hala Live</div>
-            <div class="coin-box"><i class="fas fa-coins" style="color:gold"></i> 1,500</div>
-        </header>
-        
-        <div class="profile-bar">
-            <div class="avatar-circle" id="user-avatar" style="background: #ff5e62;">U</div>
-            <div>
-                <div id="display-name" style="font-weight: bold;">User_7721</div>
-                <div style="font-size: 11px; color: #888;">ID: 998213 | Lv. 1</div>
+        <div class="main-header">
+            <div class="logo-text">Hala Live</div>
+            <div class="currency-display">
+                <i class="fas fa-coins" style="color: var(--hala-gold);"></i>
+                <span style="font-weight: 700;">1,500</span>
             </div>
         </div>
 
-        <div class="room-container">
-            <div class="room-card" onclick="startApp('የኢትዮጵያ ምርጦች 🇪🇹')">
-                <div>
-                    <div class="room-title">የኢትዮጵያ ምርጦች 🇪🇹</div>
-                    <div class="room-meta"><i class="fas fa-users"></i> 1,240 online</div>
+        <div class="category-tabs">
+            <div class="tab active">ለእርስዎ</div>
+            <div class="tab">ተወዳጅ</div>
+            <div class="tab">አዲስ</div>
+            <div class="tab">ውይይት</div>
+        </div>
+
+        <div class="room-scroll">
+            <div class="room-item" onclick="joinHalaRoom('የኢትዮጵያ ምርጦች 🇪🇹')">
+                <div class="room-icon-box"><i class="fas fa-flag"></i></div>
+                <div class="room-details">
+                    <h3>የኢትዮጵያ ምርጦች 🇪🇹</h3>
+                    <p><i class="fas fa-user-friends"></i> 1.2k እየተሳተፉ ነው</p>
                 </div>
-                <i class="fas fa-headset" style="font-size: 24px; color: var(--hala)"></i>
             </div>
-            
-            <div class="room-card" onclick="startApp('G-Matrix VIP Room')">
-                <div>
-                    <div class="room-title">G-Matrix VIP Room 💎</div>
-                    <div class="room-meta"><i class="fas fa-users"></i> 42 online</div>
+
+            <div class="room-item" onclick="joinHalaRoom('G-Matrix VIP 💎')">
+                <div class="room-icon-box" style="background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);"><i class="fas fa-gem"></i></div>
+                <div class="room-details">
+                    <h3>G-Matrix VIP 💎</h3>
+                    <p><i class="fas fa-user-friends"></i> 450 online</p>
                 </div>
-                <i class="fas fa-shield-halved" style="font-size: 24px; color: #ff9800"></i>
             </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active"><i class="fas fa-home"></i>መነሻ</div>
+            <div class="nav-item"><i class="fas fa-compass"></i>አስስ</div>
+            <div class="center-nav" onclick="joinHalaRoom('የእኔ ክፍል')"><i class="fas fa-plus"></i></div>
+            <div class="nav-item"><i class="fas fa-comment-dots"></i>መልእክት</div>
+            <div class="nav-item"><i class="fas fa-user"></i>እኔ</div>
         </div>
     </div>
 
     <!-- Live Room Page -->
     <div id="room-page" class="page">
-        <div class="room-header">
-            <i class="fas fa-chevron-left" onclick="leaveRoom()"></i>
-            <span id="active-room-name" style="font-weight: bold;">...</span>
+        <div class="room-nav">
+            <div class="room-info-top">
+                <i class="fas fa-arrow-left" onclick="exitRoom()"></i>
+                <span id="room-name-display" style="font-weight: 600;">Room</span>
+            </div>
+            <i class="fas fa-ellipsis-v"></i>
         </div>
 
-        <div class="seats-grid">
-            <div class="seat host-seat">
-                <div class="seat-circle host-circle"><i class="fas fa-crown" style="font-size: 30px; color: var(--pink)"></i></div>
-                <b>Admin</b>
+        <div class="stage-area">
+            <div class="host-container">
+                <div class="avatar-wrap">
+                    <i class="fas fa-crown crown-icon"></i>
+                    <div class="avatar-img"><i class="fas fa-user-tie"></i></div>
+                </div>
+                <div style="color: #333; font-weight: 700; font-size: 14px;">Admin</div>
             </div>
+            
             <div class="seat"><div class="seat-circle">1</div></div>
             <div class="seat"><div class="seat-circle">2</div></div>
             <div class="seat"><div class="seat-circle">3</div></div>
             <div class="seat"><div class="seat-circle">4</div></div>
         </div>
 
-        <div class="chat-display" id="chat-box"></div>
+        <div class="live-chat-box" id="hala-chat">
+            <div class="chat-msg" style="color: var(--hala-teal);"><b>System:</b> እንኳን ደህና መጡ! ህግጋቱን ያክብሩ።</div>
+        </div>
 
-        <div class="action-bar">
-            <div class="mic-trigger" id="main-mic" onclick="toggleAudio()">
-                <i class="fas fa-microphone-slash" id="mic-icon"></i>
+        <div class="bottom-controls">
+            <div class="control-btn" id="mic-toggle" onclick="toggleHalaMic()">
+                <i class="fas fa-microphone-slash" id="mic-icon-ui"></i>
             </div>
-            <input type="text" class="chat-input" id="chat-msg" placeholder="መልእክት ይጻፉ..." onkeypress="handleEnter(event)">
-            <i class="fas fa-gift" style="color: #ff9800; font-size: 25px;"></i>
+            <input type="text" class="msg-input" id="msg-field" placeholder="መልእክት ይጻፉ..." onkeypress="sendHalaMsg(event)">
+            <div class="control-btn" style="color: var(--hala-gold);"><i class="fas fa-gift"></i></div>
         </div>
     </div>
 
     <script>
-        const APP_ID = "699e23ee48c64b02b5471b212a486e29";
+        // --- CONFIG ---
+        const AGORA_APP_ID = "699e23ee48c64b02b5471b212a486e29";
         const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-        let localTracks = { audio: null };
-        let micOn = false;
+        let audioTrack = null;
+        let isMicOn = false;
 
-        // መጀመሪያ Splash screen እንዲታይ
-        setTimeout(() => { showPage('home-page'); }, 2000);
+        // --- APP ENGINE ---
+        window.onload = () => {
+            console.log("App Started");
+            setTimeout(() => {
+                document.getElementById('splash-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('splash-screen').style.display = 'none';
+                    switchPage('home-page');
+                }, 500);
+            }, 2500);
+        };
 
-        async function startApp(roomName) {
-            document.getElementById('active-room-name').innerText = roomName;
-            showPage('room-page');
-            
+        async function joinHalaRoom(name) {
+            document.getElementById('room-name-display').innerText = name;
+            switchPage('room-page');
+
             try {
-                // መጀመሪያ ማይክሮፎን ፈቃድ መጠየቅ
-                localTracks.audio = await AgoraRTC.createMicrophoneAudioTrack();
-                await localTracks.audio.setEnabled(false); // ሲጀመር ዝም እንዲል
+                // 1. መጀመሪያ ማይክሮፎኑን አዘጋጅ
+                audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                await audioTrack.setEnabled(false); // ሲገቡ ዝም እንዲሉ (Mute)
                 
-                await client.join(APP_ID, "main-channel", null, null);
-                await client.publish([localTracks.audio]);
+                // 2. ቻናሉን ተቀላቀል
+                await client.join(AGORA_APP_ID, "hala-main", null, null);
                 
-                addChat("System", "እንኳን መጡ! አሁን ድምፅ ለመልቀቅ ማይኩን ይንኩ።", "gray");
+                // 3. ድምፅህን ለሌሎች ዝግጁ አድርግ
+                await client.publish([audioTrack]);
+                
+                pushSystemMsg("ተገናኝተዋል! ድምፅ ለመልቀቅ ማይኩን ይጫኑ።");
             } catch (err) {
-                console.error(err);
-                alert("ማይክሮፎን አልተፈቀደም! እባክዎ በ Chrome Setting ውስጥ 'Allow' ማለታችሁን ያረጋግጡ።");
+                console.error("Connection Error:", err);
+                alert("ማይክሮፎን አልተፈቀደም! እባክህ Settings -> Chrome -> Permissions -> Microphone ገብተህ 'Allow' አድርገው።");
             }
         }
 
-        async function toggleAudio() {
-            if (!localTracks.audio) return;
-            
-            if (!micOn) {
-                await localTracks.audio.setEnabled(true);
-                document.getElementById('main-mic').classList.add('mic-active');
-                document.getElementById('mic-icon').className = "fas fa-microphone";
-                micOn = true;
+        async function toggleHalaMic() {
+            if (!audioTrack) return;
+
+            if (!isMicOn) {
+                await audioTrack.setEnabled(true);
+                document.getElementById('mic-toggle').classList.add('btn-active');
+                document.getElementById('mic-icon-ui').className = "fas fa-microphone";
+                isMicOn = true;
+                pushSystemMsg("ማይክሮፎን በርቷል 🎙️");
             } else {
-                await localTracks.audio.setEnabled(false);
-                document.getElementById('main-mic').classList.remove('mic-active');
-                document.getElementById('mic-icon').className = "fas fa-microphone-slash";
-                micOn = false;
+                await audioTrack.setEnabled(false);
+                document.getElementById('mic-toggle').classList.remove('btn-active');
+                document.getElementById('mic-icon-ui').className = "fas fa-microphone-slash";
+                isMicOn = false;
+                pushSystemMsg("ማይክሮፎን ተዘግቷል 🔇");
             }
         }
 
-        function handleEnter(e) {
+        function sendHalaMsg(e) {
             if (e.key === 'Enter' && e.target.value.trim() !== "") {
-                addChat("እኔ", e.target.value, "my");
+                const box = document.getElementById('hala-chat');
+                const div = document.createElement('div');
+                div.className = 'chat-msg';
+                div.style.alignSelf = 'flex-end';
+                div.style.background = '#e3fcf9';
+                div.innerHTML = `<b>እኔ:</b> ${e.target.value}`;
+                box.appendChild(div);
+                box.scrollTop = box.scrollHeight;
                 e.target.value = "";
             }
         }
 
-        function addChat(user, msg, type) {
-            const box = document.getElementById('chat-box');
+        function pushSystemMsg(text) {
+            const box = document.getElementById('hala-chat');
             const div = document.createElement('div');
-            div.className = `chat-bubble ${type === 'my' ? 'my-chat' : 'other-chat'}`;
-            div.innerHTML = `<b>${user}:</b> ${msg}`;
+            div.className = 'chat-msg';
+            div.style.color = '#888';
+            div.innerHTML = `<i>${text}</i>`;
             box.appendChild(div);
             box.scrollTop = box.scrollHeight;
         }
 
-        async function leaveRoom() {
-            if (localTracks.audio) {
-                localTracks.audio.stop();
-                localTracks.audio.close();
+        async function exitRoom() {
+            if (audioTrack) {
+                audioTrack.stop();
+                audioTrack.close();
+                audioTrack = null;
             }
             await client.leave();
-            showPage('home-page');
+            switchPage('home-page');
+            
+            // UI Reset
+            isMicOn = false;
+            document.getElementById('mic-toggle').classList.remove('btn-active');
+            document.getElementById('mic-icon-ui').className = "fas fa-microphone-slash";
         }
 
-        function showPage(id) {
+        function switchPage(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        // ሌሎች ሲናገሩ ለመስማት
+        // ሌሎች ሰዎች ሲገቡ ድምፃቸውን ለመስማት
         client.on("user-published", async (user, mediaType) => {
             await client.subscribe(user, mediaType);
-            if (mediaType === "audio") user.audioTrack.play();
+            if (mediaType === "audio") {
+                user.audioTrack.play();
+                pushSystemMsg("አዲስ ሰው ድምፅ እየለቀቀ ነው...");
+            }
         });
     </script>
 </body>
