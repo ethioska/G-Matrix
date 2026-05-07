@@ -1,12 +1,8 @@
-// ================================
-// server.js
-// G-Matrix Live Voice Server
-// ================================
-
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
+const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
@@ -17,210 +13,134 @@ const io = new Server(server, {
     }
 });
 
-const PORT = process.env.PORT || 3000;
-
+app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public/index.html"));
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
-// =================================
-// ROOM STORAGE
-// =================================
 
 const rooms = {};
 
-// =================================
-// ROOM IDS
-// =================================
-
-const ROOM_IDS = [];
-
-for (let i = 100000; i <= 101500; i++) {
-    ROOM_IDS.push(i.toString());
+function generateRoomId() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-function generateRoomId(name) {
+io.on("connection", (socket) => {
 
-    const used = Object.keys(rooms);
+    socket.on("host-room", ({ name }) => {
 
-    const free = ROOM_IDS.find(id => !used.includes(id));
-
-    if (free) return free;
-
-    return (
-        name.charAt(0).toUpperCase() +
-        Math.floor(100000 + Math.random() * 900000)
-    );
-}
-
-// =================================
-// SOCKETS
-// =================================
-
-io.on("connection", socket => {
-
-    console.log("USER CONNECTED");
-
-    // ============================
-    // HOST ROOM
-    // ============================
-
-    socket.on("host-room", data => {
-
-        const roomId = generateRoomId(data.name);
+        const roomId = generateRoomId();
 
         rooms[roomId] = {
             roomId,
-            hostName: data.name,
-            hostSocket: socket.id,
+            host: socket.id,
+            hostName: name,
             listeners: [],
-            speakers: [],
-            micRequests: []
+            speakers: []
         };
 
         socket.join(roomId);
 
-        socket.emit("room-created", {
+        io.to(socket.id).emit("room-created", {
             roomId,
-            hostName: data.name
+            hostName: name
         });
-
-        console.log("ROOM CREATED:", roomId);
 
     });
 
-    // ============================
-    // JOIN ROOM
-    // ============================
+    socket.on("join-room", ({ roomId, name, hostName }) => {
 
-    socket.on("join-room", data => {
-
-        const room = rooms[data.roomId];
+        const room = rooms[roomId];
 
         if (!room) {
-            socket.emit("join-error", "Room not found");
+            io.to(socket.id).emit("join-error", "Room Not Found");
             return;
         }
 
         if (
             room.hostName.toLowerCase().trim() !==
-            data.hostName.toLowerCase().trim()
+            hostName.toLowerCase().trim()
         ) {
-            socket.emit("join-error", "Wrong Host Name");
+            io.to(socket.id).emit("join-error", "Wrong Host Name");
             return;
         }
 
-        socket.join(data.roomId);
+        socket.join(roomId);
 
         room.listeners.push({
             socketId: socket.id,
-            name: data.name
+            name
         });
 
-        io.to(room.hostSocket).emit("listener-update", {
-            total: room.listeners.length
+        io.to(room.host).emit("listener-joined", {
+            socketId: socket.id,
+            name
         });
 
-        socket.emit("join-success", {
-            roomId: data.roomId,
+        io.to(roomId).emit("listeners-update", {
+            count: room.listeners.length
+        });
+
+        io.to(socket.id).emit("join-success", {
+            roomId,
             hostName: room.hostName
         });
 
     });
 
-    // ============================
-    // APPLY MIC
-    // ============================
+    socket.on("apply-mic", ({ roomId, name }) => {
 
-    socket.on("apply-mic", data => {
-
-        const room = rooms[data.roomId];
+        const room = rooms[roomId];
 
         if (!room) return;
 
-        room.micRequests.push({
+        io.to(room.host).emit("mic-request", {
             socketId: socket.id,
-            name: data.name
-        });
-
-        io.to(room.hostSocket).emit("mic-request", {
-            socketId: socket.id,
-            name: data.name
+            name
         });
 
     });
 
-    // ============================
-    // ACCEPT MIC
-    // ============================
+    socket.on("approve-speaker", ({ roomId, user }) => {
 
-    socket.on("accept-mic", data => {
-
-        const room = rooms[data.roomId];
+        const room = rooms[roomId];
 
         if (!room) return;
 
-        room.speakers.push({
-            socketId: data.userSocket,
-            name: data.name
-        });
+        room.speakers.push(user);
 
-        io.to(data.userSocket).emit("mic-approved");
+        io.to(user.socketId).emit("mic-approved");
 
-        io.to(data.roomId).emit("speaker-update", {
-            speakers: room.speakers
-        });
+        io.to(roomId).emit("speaker-approved", room.speakers);
 
     });
 
-    // ============================
-    // REJECT MIC
-    // ============================
-
-    socket.on("reject-mic", data => {
-
-        io.to(data.userSocket).emit("mic-rejected");
-
+    socket.on("mute-user", ({ target }) => {
+        io.to(target).emit("force-muted");
     });
 
-    // ============================
-    // MUTE USER
-    // ============================
-
-    socket.on("mute-user", data => {
-
-        io.to(data.userSocket).emit("force-muted");
-
+    socket.on("kick-user", ({ target }) => {
+        io.to(target).emit("kicked");
     });
 
-    // ============================
-    // KICK USER
-    // ============================
+    socket.on("speaking", ({ roomId, socketId, speaking }) => {
 
-    socket.on("kick-user", data => {
-
-        io.to(data.userSocket).emit("kicked");
-
-    });
-
-    // ============================
-    // CHAT
-    // ============================
-
-    socket.on("send-message", data => {
-
-        io.to(data.roomId).emit("new-message", {
-            name: data.name,
-            message: data.message
+        io.to(roomId).emit("speaking-update", {
+            socketId,
+            speaking
         });
 
     });
 
-    // ============================
-    // DISCONNECT
-    // ============================
+    socket.on("chat-message", ({ roomId, name, message }) => {
+
+        io.to(roomId).emit("chat-message", {
+            name,
+            message
+        });
+
+    });
 
     socket.on("disconnect", () => {
 
@@ -228,14 +148,11 @@ io.on("connection", socket => {
 
             const room = rooms[roomId];
 
-            // HOST LEFT
-            if (room.hostSocket === socket.id) {
+            if (room.host === socket.id) {
 
-                io.to(roomId).emit("room-closed");
+                io.to(roomId).emit("room-ended");
 
                 delete rooms[roomId];
-
-                console.log("ROOM CLOSED:", roomId);
             }
 
         }
@@ -244,8 +161,8 @@ io.on("connection", socket => {
 
 });
 
-// =================================
+const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-    console.log("SERVER RUNNING");
+    console.log("Server Running " + PORT);
 });
