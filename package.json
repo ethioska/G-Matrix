@@ -1,7 +1,3 @@
-// ================================
-// package.json
-// ================================
-
 {
   "name": "gmatrix-live",
   "version": "1.0.0",
@@ -10,6 +6,8 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "agora-rtc-sdk-ng": "^4.23.2",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "socket.io": "^4.7.5"
   }
