@@ -1,17 +1,12 @@
-<!-- ========================================= -->
-<!-- public/index.html -->
-<!-- ========================================= -->
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<title>G-Matrix Live</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>G-Matrix</title>
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
@@ -21,24 +16,24 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 body{
 margin:0;
 font-family:Arial;
-background:#021428;
+background:#07121f;
 color:white;
 }
 
 .top{
-padding:20px;
-background:linear-gradient(90deg,#11d9c5,#ff2da5);
-font-size:40px;
+padding:18px;
+font-size:32px;
 font-weight:bold;
 text-align:center;
+background:linear-gradient(90deg,#08d9c4,#ff2d96);
 }
 
-.container{
+.page{
 padding:20px;
 }
 
 .card{
-background:#0d2744;
+background:#112033;
 padding:20px;
 border-radius:20px;
 margin-bottom:20px;
@@ -47,12 +42,12 @@ margin-bottom:20px;
 input{
 width:100%;
 padding:18px;
+margin-bottom:15px;
 border:none;
 border-radius:15px;
-background:#183554;
+background:#1d3147;
 color:white;
 font-size:18px;
-margin-bottom:15px;
 box-sizing:border-box;
 }
 
@@ -61,25 +56,25 @@ width:100%;
 padding:18px;
 border:none;
 border-radius:15px;
-font-size:22px;
+font-size:18px;
 font-weight:bold;
 color:white;
 cursor:pointer;
 }
 
 .hostBtn{
-background:#12d4c2;
+background:#00c9a7;
 }
 
 .joinBtn{
-background:#ff2da5;
+background:#ff2d96;
 }
 
-.live{
+.livePage{
 display:none;
 }
 
-.roomTop{
+.roomHeader{
 display:flex;
 justify-content:space-between;
 align-items:center;
@@ -93,24 +88,34 @@ font-size:18px;
 }
 
 .hostCard{
-background:#0d2744;
-margin:20px;
+background:#102235;
+margin:15px;
 padding:25px;
-border-radius:20px;
+border-radius:25px;
 text-align:center;
 }
 
 .avatar{
-width:90px;
-height:90px;
+width:100px;
+height:100px;
 border-radius:50%;
 background:#ff9800;
 display:flex;
 align-items:center;
 justify-content:center;
-font-size:40px;
+font-size:42px;
 font-weight:bold;
 margin:auto;
+position:relative;
+}
+
+.pulse{
+animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+0%{box-shadow:0 0 0 0 #00ff9d;}
+100%{box-shadow:0 0 0 20px transparent;}
 }
 
 .speakers{
@@ -118,8 +123,8 @@ padding:15px;
 }
 
 .speaker{
-background:#0d2744;
-padding:20px;
+background:#12273d;
+padding:18px;
 border-radius:20px;
 margin-bottom:15px;
 display:flex;
@@ -132,12 +137,11 @@ display:flex;
 gap:10px;
 }
 
-.smallBtn{
-padding:10px 15px;
+.small{
+padding:10px 14px;
 border:none;
 border-radius:10px;
-font-size:15px;
-cursor:pointer;
+font-size:14px;
 }
 
 .mute{
@@ -148,13 +152,22 @@ background:orange;
 background:red;
 }
 
+.applyBtn{
+position:fixed;
+bottom:90px;
+left:20px;
+right:20px;
+background:#00c9a7;
+}
+
 .chat{
 position:fixed;
 bottom:0;
-width:100%;
+left:0;
+right:0;
 display:flex;
 padding:10px;
-background:#021428;
+background:#07121f;
 box-sizing:border-box;
 }
 
@@ -165,332 +178,258 @@ margin:0;
 .send{
 width:80px;
 margin-left:10px;
-background:#12d4c2;
-}
-
-.requestBox{
-position:fixed;
-top:20px;
-right:20px;
-background:#ff2da5;
-padding:15px;
-border-radius:15px;
-display:none;
-z-index:999;
+background:#ff2d96;
 }
 
 </style>
-
 </head>
-
 <body>
 
-<div class="top">
-G-Matrix
-</div>
+<div class="top">G-Matrix</div>
 
-<div class="container" id="home">
+<div class="page" id="homePage">
 
 <div class="card">
-
-<h1>Your Name</h1>
-
-<input id="hostName" placeholder="Enter name"/>
-
+<h2>Host Room</h2>
+<input id="hostName" placeholder="Your Name">
 <button class="hostBtn" onclick="hostRoom()">
-<i class="fa fa-microphone"></i>
-Host Room
+Host Live
 </button>
-
 </div>
 
 <div class="card">
-
-<h1>Join Room</h1>
-
-<input id="joinName" placeholder="Your name"/>
-<input id="joinHost" placeholder="Host name"/>
-<input id="roomId" placeholder="Room ID"/>
-
+<h2>Join Room</h2>
+<input id="joinName" placeholder="Your Name">
+<input id="joinHost" placeholder="Host Name">
+<input id="joinRoomId" placeholder="Room ID">
 <button class="joinBtn" onclick="joinRoom()">
-<i class="fa fa-headphones"></i>
-Join Room
+Join Live
 </button>
-
 </div>
 
 </div>
 
-<!-- LIVE -->
+<div class="livePage" id="livePage">
 
-<div class="live" id="livePage">
-
-<div class="roomTop">
-
-<h2 id="roomText"></h2>
-
+<div class="roomHeader">
+<div id="roomInfo"></div>
 <div class="counter">
 <div>👥 <span id="listenerCount">0</span></div>
 <div>🎤 <span id="speakerCount">0</span></div>
 </div>
-
 </div>
 
 <div class="hostCard">
-
 <div class="avatar" id="hostAvatar">H</div>
-
 <h2 id="hostLabel"></h2>
-
 </div>
 
-<div class="speakers" id="speakers"></div>
+<div class="speakers" id="speakerList"></div>
 
-</div>
-
-<div class="chat">
-
-<input id="msg" placeholder="Message"/>
-
-<button class="send" onclick="sendMessage()">
-<i class="fa fa-paper-plane"></i>
+<button class="applyBtn" id="applyBtn" onclick="applyMic()">
+Apply Mic
 </button>
 
 </div>
 
-<div class="requestBox" id="requestBox"></div>
+<div class="chat">
+<input id="chatInput" placeholder="Message">
+<button class="send" onclick="sendMessage()">
+<i class="fa fa-paper-plane"></i>
+</button>
+</div>
 
 <script>
 
 const socket = io();
 
-let currentRoom = "";
-let myName = "";
-let isHost = false;
+const APP_ID = "08f3860e6a9f4775b0b5acefe96b2b51";
 
-// =======================
-// HOST ROOM
-// =======================
+const client = AgoraRTC.createClient({
+mode:"rtc",
+codec:"vp8"
+});
 
-function hostRoom(){
+let localTrack;
+let currentRoom="";
+let myName="";
+let isHost=false;
 
-const name = document.getElementById("hostName").value;
+async function hostRoom(){
 
-if(!name) return alert("Enter name");
+const name=document.getElementById("hostName").value;
 
-myName = name;
-isHost = true;
+if(!name) return alert("Enter Name");
+
+myName=name;
+isHost=true;
 
 socket.emit("host-room",{name});
 
 }
 
-socket.on("room-created", data => {
+socket.on("room-created", async data=>{
 
-currentRoom = data.roomId;
+currentRoom=data.roomId;
 
-document.getElementById("home").style.display="none";
-document.getElementById("livePage").style.display="block";
+showLive(data.hostName,data.roomId);
 
-document.getElementById("roomText").innerHTML =
-"Room ID : " + data.roomId;
-
-document.getElementById("hostLabel").innerHTML =
-data.hostName;
-
-document.getElementById("hostAvatar").innerHTML =
-data.hostName.charAt(0).toUpperCase();
+await joinAgora(currentRoom,true);
 
 });
 
-// =======================
-// JOIN ROOM
-// =======================
+async function joinRoom(){
 
-function joinRoom(){
-
-const name =
-document.getElementById("joinName").value;
-
-const hostName =
-document.getElementById("joinHost").value;
-
-const roomId =
-document.getElementById("roomId").value;
+const name=document.getElementById("joinName").value;
+const hostName=document.getElementById("joinHost").value;
+const roomId=document.getElementById("joinRoomId").value;
 
 if(!name || !hostName || !roomId){
-alert("Fill all");
+alert("Fill All");
 return;
 }
 
-myName = name;
+myName=name;
 
 socket.emit("join-room",{
+roomId,
 name,
-hostName,
-roomId
+hostName
 });
 
 }
 
-socket.on("join-success", data => {
+socket.on("join-success", async data=>{
 
-currentRoom = data.roomId;
+currentRoom=data.roomId;
 
-document.getElementById("home").style.display="none";
-document.getElementById("livePage").style.display="block";
+showLive(data.hostName,data.roomId);
 
-document.getElementById("roomText").innerHTML =
-"Room ID : " + data.roomId;
+await joinAgora(currentRoom,false);
 
-document.getElementById("hostLabel").innerHTML =
-data.hostName;
+});
 
-document.getElementById("hostAvatar").innerHTML =
-data.hostName.charAt(0).toUpperCase();
+socket.on("join-error",msg=>{
+alert(msg);
+});
 
-setTimeout(()=>{
+function showLive(host,id){
 
-if(confirm("Apply Mic?")){
+homePage.style.display="none";
+livePage.style.display="block";
+
+roomInfo.innerHTML="Room ID : "+id;
+hostLabel.innerHTML=host;
+hostAvatar.innerHTML=host.charAt(0).toUpperCase();
+
+}
+
+async function joinAgora(channel,publish){
+
+await client.join(APP_ID,channel,null,null);
+
+if(publish){
+
+localTrack=await AgoraRTC.createMicrophoneAudioTrack();
+
+await client.publish([localTrack]);
+
+}
+
+client.on("user-published", async(user,mediaType)=>{
+
+await client.subscribe(user,mediaType);
+
+if(mediaType==="audio"){
+user.audioTrack.play();
+}
+
+});
+
+}
+
+function applyMic(){
 
 socket.emit("apply-mic",{
 roomId:currentRoom,
 name:myName
 });
 
+alert("Mic Request Sent");
+
 }
 
-},1000);
-
-});
-
-socket.on("join-error", msg => {
-alert(msg);
-});
-
-// =======================
-// MIC REQUEST
-// =======================
-
-socket.on("mic-request", data => {
+socket.on("mic-request", data=>{
 
 if(!isHost) return;
 
-const approve = confirm(
-data.name + " wants mic"
-);
+const ok=confirm(data.name+" wants mic");
 
-if(approve){
+if(ok){
 
-socket.emit("accept-mic",{
+socket.emit("approve-speaker",{
 roomId:currentRoom,
-userSocket:data.socketId,
-name:data.name
-});
-
-}else{
-
-socket.emit("reject-mic",{
-userSocket:data.socketId
+user:{
+name:data.name,
+socketId:data.socketId
+}
 });
 
 }
 
 });
 
-// =======================
-// SPEAKERS
-// =======================
+socket.on("speaker-approved", users=>{
 
-socket.on("speaker-update", data => {
+speakerCount.innerHTML=users.length;
 
-document.getElementById("speakerCount").innerHTML =
-data.speakers.length;
+speakerList.innerHTML="";
 
-const speakers =
-document.getElementById("speakers");
+users.forEach(user=>{
 
-speakers.innerHTML = "";
-
-data.speakers.forEach(user=>{
-
-speakers.innerHTML += `
-
+speakerList.innerHTML+=`
 <div class="speaker">
-
 <div>
 <h3>${user.name}</h3>
 </div>
-
 <div class="controls">
-
-<button class="smallBtn mute">
-Mute
-</button>
-
-<button class="smallBtn kick">
-Kick
-</button>
-
+<button class="small mute">Mute</button>
+<button class="small kick">Kick</button>
 </div>
-
 </div>
-
 `;
 
 });
 
 });
 
-// =======================
-// LISTENERS
-// =======================
-
-socket.on("listener-update", data => {
-
-document.getElementById("listenerCount").innerHTML =
-data.total;
-
+socket.on("listeners-update",data=>{
+listenerCount.innerHTML=data.count;
 });
-
-// =======================
-// CHAT
-// =======================
 
 function sendMessage(){
 
-const msg =
-document.getElementById("msg").value;
+const message=chatInput.value;
 
-socket.emit("send-message",{
+socket.emit("chat-message",{
 roomId:currentRoom,
 name:myName,
-message:msg
+message
 });
 
-document.getElementById("msg").value="";
+chatInput.value="";
 
 }
 
-socket.on("new-message", data => {
-
-alert(data.name + ": " + data.message);
-
+socket.on("chat-message",data=>{
+alert(data.name+": "+data.message);
 });
 
-// =======================
-// ROOM CLOSED
-// =======================
-
-socket.on("room-closed", ()=>{
-
-alert("Host ended live");
-
+socket.on("room-ended",()=>{
+alert("Host Ended Live");
 location.reload();
-
 });
 
 </script>
-
 </body>
 </html>
