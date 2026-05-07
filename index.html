@@ -1,303 +1,844 @@
 <!DOCTYPE html>
-<html lang="am">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>G-Matrix | Complete Hala Experience</title>
-    
-    <!-- External SDK and Libraries -->
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.11.0.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --hala-teal: #22e1d1;
-            --hala-pink: #ff4dff;
-            --hala-gold: #ffd700;
-            --dark-gray: #333;
-            --light-bg: #f8f9fa;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>G-Matrix</title>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background-color: var(--light-bg); height: 100vh; overflow: hidden; }
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
-        /* --- Page Management --- */
-        .page { display: none; height: 100vh; width: 100%; flex-direction: column; position: absolute; }
-        .page.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 
-        /* --- Header UI --- */
-        .main-header { background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .logo-text { color: var(--hala-teal); font-weight: 800; font-size: 24px; }
-        .coin-status { background: #fff9e6; padding: 6px 16px; border-radius: 20px; border: 1px solid #ffeeba; display: flex; align-items: center; gap: 8px; font-weight: bold; }
+<style>
 
-        /* --- Navigation Tabs --- */
-        .category-tabs { display: flex; padding: 15px 20px; gap: 20px; background: white; overflow-x: auto; white-space: nowrap; }
-        .nav-tab { font-weight: 600; color: #888; padding-bottom: 8px; cursor: pointer; }
-        .nav-tab.active { color: var(--hala-teal); border-bottom: 3px solid var(--hala-teal); }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, sans-serif;
+}
 
-        /* --- Room List UI --- */
-        .room-list { flex-grow: 1; padding: 15px; overflow-y: auto; background: #f0f2f5; padding-bottom: 100px; }
-        .room-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #f0f0f0; }
-        .room-icon { width: 65px; height: 65px; background: var(--hala-teal); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: white; font-size: 26px; }
+body{
+background:#0d0d14;
+color:white;
+overflow:hidden;
+height:100vh;
+}
 
-        /* --- Live Room Master UI --- */
-        #live-room { background: linear-gradient(180deg, #1ea79b 0%, #ffffff 40%); }
-        .room-top-nav { padding: 20px; display: flex; justify-content: space-between; color: white; align-items: center; }
-        
-        .stage-section { padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; justify-items: center; }
-        .host-seat-wrapper { grid-column: span 4; position: relative; margin-bottom: 25px; text-align: center; }
-        
-        /* Voice Visualizer (አረንጓዴ መብራት) */
-        .visualizer-ring {
-            position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px;
-            border-radius: 50%; border: 4px solid #2dfc52; opacity: 0;
-            transition: 0.15s; z-index: 1;
-        }
-        .speaking-active { animation: ring-pulse 1.2s infinite; opacity: 1; }
-        @keyframes ring-pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
+.app{
+display:flex;
+flex-direction:column;
+height:100vh;
+}
 
-        .host-pfp {
-            width: 90px; height: 90px; background: white; border-radius: 50%;
-            border: 4px solid var(--hala-pink); display: flex; align-items: center; 
-            justify-content: center; position: relative; z-index: 2; box-shadow: 0 0 20px rgba(255, 77, 255, 0.3);
-        }
-        .seat-slot { width: 55px; height: 55px; background: rgba(255, 255, 255, 0.2); border: 2px dashed rgba(255, 255, 255, 0.6); border-radius: 50%; }
+/* TOP BAR */
 
-        /* --- Private Chat/Recorder Page (የመልእክት ገጽ) --- */
-        #message-center { background: #f0f2f5; }
-        .chat-view { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .audio-msg-bubble { background: white; padding: 15px; border-radius: 18px; width: fit-content; max-width: 85%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        audio { height: 35px; width: 100%; margin-top: 10px; }
+.top-bar{
+height:60px;
+background:linear-gradient(90deg,#00c6a2,#ff4da6);
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 15px;
+font-weight:bold;
+}
 
-        .recorder-dock { background: white; padding: 25px; border-top-left-radius: 30px; border-top-right-radius: 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-        .mic-hold-btn { width: 80px; height: 80px; border-radius: 50%; background: #f0f2f5; display: flex; align-items: center; justify-content: center; font-size: 35px; color: #bbb; transition: 0.3s; cursor: pointer; border: none; }
-        .mic-hold-btn.recording { background: var(--hala-teal); color: white; box-shadow: 0 0 25px var(--hala-teal); transform: scale(1.1); }
+.wallet{
+display:flex;
+gap:12px;
+font-size:14px;
+}
 
-        /* --- Bottom Nav Bar --- */
-        .footer-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; z-index: 100; }
-        .nav-link { display: flex; flex-direction: column; align-items: center; color: #ccc; font-size: 11px; cursor: pointer; }
-        .nav-link.active { color: var(--hala-teal); }
-        .nav-link i { font-size: 22px; margin-bottom: 4px; }
-        .action-circle { width: 55px; height: 55px; background: linear-gradient(135deg, #22e1d1 0%, #17b3a6 100%); border-radius: 50%; margin-top: -40px; border: 5px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 5px 15px rgba(34, 225, 209, 0.4); }
-    </style>
+.wallet span{
+background:rgba(255,255,255,0.2);
+padding:6px 10px;
+border-radius:20px;
+}
+
+/* PAGES */
+
+.page{
+display:none;
+flex:1;
+overflow-y:auto;
+padding-bottom:80px;
+}
+
+.page.active{
+display:block;
+}
+
+/* HOME */
+
+.live-card{
+background:#181824;
+margin:12px;
+border-radius:20px;
+padding:15px;
+box-shadow:0 0 15px rgba(0,0,0,0.4);
+}
+
+.live-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.live-title{
+font-size:18px;
+font-weight:bold;
+}
+
+.live-users{
+font-size:13px;
+opacity:0.8;
+}
+
+/* LIVE ROOM */
+
+.live-room{
+padding:15px;
+}
+
+.host-seat{
+display:flex;
+justify-content:center;
+margin-bottom:25px;
+}
+
+.host-circle{
+width:110px;
+height:110px;
+border-radius:50%;
+background:linear-gradient(135deg,#00d9a5,#ff4da6);
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+animation:pulse 2s infinite;
+}
+
+.host-circle img{
+width:90px;
+height:90px;
+border-radius:50%;
+object-fit:cover;
+}
+
+.voice-ring{
+position:absolute;
+width:130px;
+height:130px;
+border:4px solid #00ffae;
+border-radius:50%;
+animation:voicePulse 1s infinite;
+}
+
+@keyframes voicePulse{
+0%{transform:scale(1);opacity:1;}
+100%{transform:scale(1.4);opacity:0;}
+}
+
+@keyframes pulse{
+0%{transform:scale(1);}
+50%{transform:scale(1.03);}
+100%{transform:scale(1);}
+}
+
+.mic-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:15px;
+}
+
+.mic-seat{
+background:#1f1f2d;
+border-radius:20px;
+padding:12px;
+text-align:center;
+position:relative;
+}
+
+.mic-seat .seat-number{
+font-size:13px;
+opacity:0.7;
+}
+
+.mic-seat i{
+font-size:25px;
+margin-top:10px;
+color:#ff4da6;
+}
+
+/* AUDIENCE */
+
+.audience{
+margin-top:25px;
+background:#161622;
+padding:15px;
+border-radius:20px;
+max-height:150px;
+overflow-y:auto;
+}
+
+.audience-user{
+padding:8px;
+border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+/* CHAT */
+
+.chat-container{
+padding:15px;
+}
+
+.chat-box{
+background:#181824;
+padding:10px;
+border-radius:20px;
+height:60vh;
+overflow-y:auto;
+}
+
+.message{
+margin:10px 0;
+display:flex;
+flex-direction:column;
+}
+
+.message.sent{
+align-items:flex-end;
+}
+
+.bubble{
+padding:10px 15px;
+border-radius:20px;
+max-width:75%;
+}
+
+.sent .bubble{
+background:linear-gradient(90deg,#00c6a2,#ff4da6);
+}
+
+.received .bubble{
+background:#242438;
+}
+
+.chat-input{
+display:flex;
+margin-top:15px;
+gap:10px;
+}
+
+.chat-input input{
+flex:1;
+padding:12px;
+border:none;
+border-radius:30px;
+background:#1f1f2d;
+color:white;
+}
+
+.chat-input button{
+border:none;
+background:#ff4da6;
+color:white;
+width:50px;
+border-radius:50%;
+font-size:18px;
+}
+
+/* HOLD RECORD */
+
+.record-btn{
+margin-top:15px;
+width:100%;
+padding:15px;
+border:none;
+border-radius:30px;
+background:#00c6a2;
+color:white;
+font-weight:bold;
+}
+
+/* GIFTS */
+
+.gift-panel{
+position:fixed;
+bottom:80px;
+left:0;
+right:0;
+background:#181824;
+padding:20px;
+display:none;
+border-top-left-radius:25px;
+border-top-right-radius:25px;
+}
+
+.gifts{
+display:flex;
+justify-content:space-around;
+}
+
+.gift{
+text-align:center;
+cursor:pointer;
+}
+
+.gift i{
+font-size:35px;
+margin-bottom:5px;
+}
+
+.gift-animation{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+font-size:90px;
+display:none;
+animation:giftFly 2s forwards;
+}
+
+@keyframes giftFly{
+0%{
+opacity:0;
+transform:translate(-50%,50%) scale(0.5);
+}
+50%{
+opacity:1;
+}
+100%{
+opacity:0;
+transform:translate(-50%,-200%) scale(1.8);
+}
+}
+
+/* LEADERBOARD */
+
+.leaderboard{
+padding:15px;
+}
+
+.rank-card{
+background:#181824;
+margin-bottom:12px;
+padding:15px;
+border-radius:20px;
+display:flex;
+justify-content:space-between;
+}
+
+/* PROFILE */
+
+.profile{
+padding:20px;
+text-align:center;
+}
+
+.profile img{
+width:100px;
+height:100px;
+border-radius:50%;
+margin-bottom:15px;
+}
+
+/* NAVIGATION */
+
+.bottom-nav{
+height:70px;
+background:#11111a;
+display:flex;
+justify-content:space-around;
+align-items:center;
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+border-top:1px solid rgba(255,255,255,0.08);
+}
+
+.nav-item{
+text-align:center;
+font-size:12px;
+color:#999;
+}
+
+.nav-item.active{
+color:#00d9a5;
+}
+
+.nav-item i{
+display:block;
+font-size:22px;
+margin-bottom:5px;
+}
+
+.create-btn{
+width:60px;
+height:60px;
+background:linear-gradient(135deg,#00c6a2,#ff4da6);
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+margin-top:-30px;
+font-size:25px;
+color:white;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:480px){
+
+.mic-grid{
+grid-template-columns:repeat(3,1fr);
+}
+
+}
+
+</style>
 </head>
+
 <body>
 
-    <!-- 1. HOME PAGE -->
-    <div id="home-page" class="page active">
-        <header class="main-header">
-            <div class="logo-text">Hala Live</div>
-            <div class="coin-status"><i class="fas fa-coins" style="color:var(--hala-gold)"></i> 1,500</div>
-        </header>
-        <nav class="category-tabs">
-            <div class="nav-tab active">ለእርስዎ</div>
-            <div class="nav-tab">ተወዳጅ</div>
-            <div class="nav-tab">አዲስ</div>
-            <div class="nav-tab">ውይይት</div>
-        </nav>
-        <main class="room-list">
-            <div class="room-card" onclick="joinLiveRoom('የኢትዮጵያ ምርጦች 🇪🇹')">
-                <div class="room-icon"><i class="fas fa-flag"></i></div>
-                <div><h3 style="font-size: 17px;">የኢትዮጵያ ምርጦች 🇪🇹</h3><p style="font-size: 12px; color: #888;"><i class="fas fa-user-friends"></i> 1.2k እየተሳተፉ ነው</p></div>
-            </div>
-            <div class="room-card" onclick="joinLiveRoom('G-Matrix VIP Room 💎')">
-                <div class="room-icon" style="background: #ff9800;"><i class="fas fa-gem"></i></div>
-                <div><h3 style="font-size: 17px;">G-Matrix VIP Room 💎</h3><p style="font-size: 12px; color: #888;"><i class="fas fa-user-friends"></i> 450 online</p></div>
-            </div>
-        </main>
-    </div>
+<div class="app">
 
-    <!-- 2. LIVE ROOM PAGE -->
-    <div id="live-room" class="page">
-        <header class="room-top-nav">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <i class="fas fa-chevron-left" onclick="leaveLiveRoom()"></i>
-                <span id="current-room-name" style="font-weight: 700;">Room</span>
-            </div>
-            <i class="fas fa-ellipsis-v"></i>
-        </header>
-        
-        <div class="stage-section">
-            <div class="host-seat-wrapper">
-                <div class="visualizer-ring" id="voice-ring"></div>
-                <div class="host-pfp"><i class="fas fa-user-crown" style="font-size:35px; color:var(--hala-teal)"></i></div>
-                <div style="margin-top:8px; font-weight:700; color:#333;">Host / Admin</div>
-            </div>
-            <div class="seat-slot"></div><div class="seat-slot"></div><div class="seat-slot"></div><div class="seat-slot"></div>
-        </div>
+<!-- TOP BAR -->
 
-        <div style="flex-grow:1; padding:20px; display:flex; flex-direction:column; gap:10px; overflow-y:auto;" id="room-chat">
-            <div style="background:rgba(255,255,255,0.7); padding:10px 15px; border-radius:15px; font-size:13px; width:fit-content; color:var(--hala-teal);">
-                <b>System:</b> እንኳን በደህና መጡ! ድምፅ ለመልቀቅ ማይኩን ይጫኑ።
-            </div>
-        </div>
+<div class="top-bar">
+<div>G-Matrix</div>
 
-        <div style="padding:15px 20px 30px; background:white; display:flex; align-items:center; gap:15px; border-top-left-radius:25px; border-top-right-radius:25px;">
-            <div id="room-mic-btn" onclick="toggleRoomMic()" style="width:50px; height:50px; border-radius:50%; background:#f0f2f5; display:flex; align-items:center; justify-content:center; font-size:22px; color:#999;">
-                <i class="fas fa-microphone-slash" id="room-mic-icon"></i>
-            </div>
-            <input type="text" placeholder="መልእክት ይጻፉ..." style="flex-grow:1; background:#f0f2f5; border:none; padding:12px 20px; border-radius:25px; outline:none;">
-            <i class="fas fa-gift" style="color:orange; font-size:26px;"></i>
-        </div>
-    </div>
+<div class="wallet">
+<span><i class="fa-solid fa-coins"></i> 15000</span>
+<span><i class="fa-solid fa-gem"></i> 320</span>
+</div>
+</div>
 
-    <!-- 3. MESSAGE/RECORDER PAGE -->
-    <div id="message-center" class="page">
-        <header style="padding:15px 20px; background:white; border-bottom:1px solid #eee; display:flex; align-items:center; gap:15px;">
-            <i class="fas fa-arrow-left" onclick="navigateTo('home-page')"></i>
-            <b style="font-size: 18px;">የመልእክት ማዕከል (ድምፅ መፈተኛ)</b>
-        </header>
-        
-        <div class="chat-view" id="test-audio-list">
-            <div class="audio-msg-bubble">
-                <b>መመሪያ:</b> ማይክሮፎኑ በትክክል መስራቱን ለማረጋገጥ ከታች ያለውን ምልክት ተጭነው ይያዙና ያውሩ። እጅዎን ሲለቁ ድምፅዎ እዚህ ይላካል።
-            </div>
-        </div>
+<!-- HOME PAGE -->
 
-        <div class="recorder-dock">
-            <div id="rec-status" style="font-size:13px; font-weight:bold; color:#888;">ለመቅዳት ተጭነው ይያዙ</div>
-            <button class="mic-hold-btn" id="tester-mic" onmousedown="handleRecStart()" onmouseup="handleRecStop()" ontouchstart="handleRecStart()" ontouchend="handleRecStop()">
-                <i class="fas fa-microphone"></i>
-            </button>
-            <span style="font-size: 11px; color: #bbb;">የድምፅ ጥራት ፍተሻ</span>
-        </div>
-    </div>
+<div class="page active" id="homePage">
 
-    <!-- BOTTOM NAVIGATION -->
-    <footer class="footer-nav">
-        <div class="nav-link active" onclick="navigateTo('home-page')"><i class="fas fa-home"></i>መነሻ</div>
-        <div class="nav-link"><i class="fas fa-compass"></i>አስስ</div>
-        <div class="action-circle"><i class="fas fa-plus"></i></div>
-        <div id="msg-nav-btn" class="nav-link" onclick="navigateTo('message-center')"><i class="fas fa-comment-dots"></i>መልእክት</div>
-        <div class="nav-link"><i class="fas fa-user"></i>እኔ</div>
-    </footer>
+<div class="live-card">
+<div class="live-header">
+<div class="live-title">Music Lovers Room</div>
+<div class="live-users">
+<i class="fa-solid fa-users"></i> 1.2K
+</div>
+</div>
+</div>
 
-    <script>
-        // --- CORE CONFIGURATION ---
-        const AGORA_ID = "699e23ee48c64b02b5471b212a486e29";
-        const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-        let localTracks = { audio: null };
-        let roomMicActive = false;
-        let testRecorder;
-        let audioChunks = [];
-        let visualizerInterval;
+<div class="live-room">
 
-        // --- PAGE ROUTING ---
-        function navigateTo(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            
-            // Update Nav Icons
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            if(pageId === 'home-page') document.querySelectorAll('.nav-link')[0].classList.add('active');
-            if(pageId === 'message-center') document.querySelectorAll('.nav-link')[2].classList.add('active');
-        }
+<div class="host-seat">
 
-        // --- LIVE ROOM LOGIC ---
-        async function joinLiveRoom(name) {
-            document.getElementById('current-room-name').innerText = name;
-            navigateTo('live-room');
-            
-            try {
-                localTracks.audio = await AgoraRTC.createMicrophoneAudioTrack();
-                await localTracks.audio.setEnabled(false); // Start muted
-                await client.join(AGORA_ID, "hala-stream", null, null);
-                await client.publish([localTracks.audio]);
-                
-                // Start Volume Visualizer
-                visualizerInterval = setInterval(() => {
-                    if (localTracks.audio && roomMicActive) {
-                        const level = localTracks.audio.getVolumeLevel();
-                        const ring = document.getElementById('voice-ring');
-                        if (level > 0.1) ring.classList.add('speaking-active');
-                        else ring.classList.remove('speaking-active');
-                    }
-                }, 150);
-                
-            } catch (err) {
-                alert("ማይክሮፎን ፈቃድ አልተገኘም! እባክዎ በ Chrome Settings -> Site Settings -> Microphone ገብተው ይፍቀዱ።");
-            }
-        }
+<div class="host-circle">
+<div class="voice-ring"></div>
 
-        async function toggleRoomMic() {
-            if (!localTracks.audio) return;
-            const btn = document.getElementById('room-mic-btn');
-            const icon = document.getElementById('room-mic-icon');
-            
-            if (!roomMicActive) {
-                await localTracks.audio.setEnabled(true);
-                btn.style.background = "var(--hala-teal)";
-                btn.style.color = "white";
-                btn.style.boxShadow = "0 0 15px var(--hala-teal)";
-                icon.className = "fas fa-microphone";
-                roomMicActive = true;
-            } else {
-                await localTracks.audio.setEnabled(false);
-                btn.style.background = "#f0f2f5";
-                btn.style.color = "#999";
-                btn.style.boxShadow = "none";
-                icon.className = "fas fa-microphone-slash";
-                document.getElementById('voice-ring').classList.remove('speaking-active');
-                roomMicActive = false;
-            }
-        }
+<img src="https://i.pravatar.cc/200"/>
+</div>
 
-        async function leaveLiveRoom() {
-            if (localTracks.audio) {
-                localTracks.audio.stop();
-                localTracks.audio.close();
-                localTracks.audio = null;
-            }
-            if (visualizerInterval) clearInterval(visualizerInterval);
-            await client.leave();
-            roomMicActive = false;
-            navigateTo('home-page');
-        }
+</div>
 
-        // --- TESTER RECORDER LOGIC (መልእክት ገጽ) ---
-        async function handleRecStart() {
-            try {
-                // Initialize mic for testing
-                const testStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                document.getElementById('tester-mic').classList.add('recording');
-                document.getElementById('rec-status').innerText = "እየቀዳ ነው... (REC)";
-                document.getElementById('rec-status').style.color = "red";
+<div class="mic-grid">
 
-                audioChunks = [];
-                testRecorder = new MediaRecorder(testStream);
-                testRecorder.ondataavailable = e => audioChunks.push(e.data);
-                testRecorder.onstop = () => {
-                    const blob = new Blob(audioChunks, { type: 'audio/mp3' });
-                    const url = URL.createObjectURL(blob);
-                    const list = document.getElementById('test-audio-list');
-                    const div = document.createElement('div');
-                    div.className = 'audio-msg-bubble';
-                    div.style.alignSelf = 'flex-end';
-                    div.style.background = '#e3fcf9';
-                    div.innerHTML = `<b>የእርስዎ ድምፅ:</b><audio controls src="${url}"></audio>`;
-                    list.appendChild(div);
-                    list.scrollTop = list.scrollHeight;
-                    
-                    // Stop stream tracks
-                    testStream.getTracks().forEach(track => track.stop());
-                };
-                testRecorder.start();
-            } catch (err) {
-                alert("ማይክሮፎን መስራት አልቻለም! እባክዎ ፈቃድ ይስጡ።");
-            }
-        }
+<div class="mic-seat">
+<div class="seat-number">1</div>
+<i class="fa-solid fa-microphone"></i>
+</div>
 
-        function handleRecStop() {
-            if (testRecorder && testRecorder.state === "recording") {
-                testRecorder.stop();
-                document.getElementById('tester-mic').classList.remove('recording');
-                document.getElementById('rec-status').innerText = "ተልኳል! ለመቀጠል ተጭነው ይያዙ";
-                document.getElementById('rec-status').style.color = "#888";
-            }
-        }
+<div class="mic-seat">
+<div class="seat-number">2</div>
+<i class="fa-solid fa-microphone"></i>
+</div>
 
-        window.onload = () => console.log("G-Matrix Hala Core Loaded Successfully.");
-    </script>
+<div class="mic-seat">
+<div class="seat-number">3</div>
+<i class="fa-solid fa-microphone"></i>
+</div>
+
+<div class="mic-seat">
+<div class="seat-number">4</div>
+<i class="fa-solid fa-microphone"></i>
+</div>
+
+<div class="mic-seat">
+<div class="seat-number">5</div>
+<i class="fa-solid fa-microphone"></i>
+</div>
+
+<div class="mic-seat">
+<div class="seat-number">6</div>
+<i class="fa-solid fa-microphone"></i>
+</div>
+
+<div class="mic-seat">
+<div class="seat-number">7</div>
+<i class="fa-solid fa-microphone"></i>
+</div>
+
+<div class="mic-seat">
+<div class="seat-number">8</div>
+<i class="fa-solid fa-microphone"></i>
+</div>
+
+</div>
+
+<div class="audience">
+<div class="audience-user">Ahmed joined</div>
+<div class="audience-user">Sara listening</div>
+<div class="audience-user">Mike joined</div>
+<div class="audience-user">John listening</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- MESSAGES PAGE -->
+
+<div class="page" id="messagePage">
+
+<div class="chat-container">
+
+<div class="chat-box" id="chatBox">
+
+<div class="message received">
+<div class="bubble">
+Hello 👋
+</div>
+</div>
+
+</div>
+
+<div class="chat-input">
+
+<input type="text" id="messageInput"
+placeholder="Type message...">
+
+<button onclick="sendMessage()">
+<i class="fa-solid fa-paper-plane"></i>
+</button>
+
+</div>
+
+<button class="record-btn"
+id="recordBtn">
+🎤 Hold To Talk
+</button>
+
+</div>
+
+</div>
+
+<!-- LEADERBOARD -->
+
+<div class="page" id="discoverPage">
+
+<div class="leaderboard">
+
+<div class="rank-card">
+<div>#1 Ali</div>
+<div>250K Coins</div>
+</div>
+
+<div class="rank-card">
+<div>#2 Mona</div>
+<div>210K Coins</div>
+</div>
+
+<div class="rank-card">
+<div>#3 Kevin</div>
+<div>180K Coins</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- PROFILE -->
+
+<div class="page" id="profilePage">
+
+<div class="profile">
+
+<img src="https://i.pravatar.cc/300"/>
+
+<h2>Seid</h2>
+
+<p>@gmatrix_user</p>
+
+<br>
+
+<h3>Followers: 12.4K</h3>
+<h3>Following: 650</h3>
+
+</div>
+
+</div>
+
+<!-- GIFT PANEL -->
+
+<div class="gift-panel" id="giftPanel">
+
+<div class="gifts">
+
+<div class="gift" onclick="sendGift('🌹')">
+<i class="fa-solid fa-rose"></i>
+<p>Rose</p>
+</div>
+
+<div class="gift" onclick="sendGift('👑')">
+<i class="fa-solid fa-crown"></i>
+<p>Crown</p>
+</div>
+
+<div class="gift" onclick="sendGift('🚗')">
+<i class="fa-solid fa-car"></i>
+<p>Supercar</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="gift-animation"
+id="giftAnimation"></div>
+
+<!-- NAVIGATION -->
+
+<div class="bottom-nav">
+
+<div class="nav-item active"
+onclick="showPage('homePage',this)">
+<i class="fa-solid fa-house"></i>
+Home
+</div>
+
+<div class="nav-item"
+onclick="showPage('discoverPage',this)">
+<i class="fa-solid fa-compass"></i>
+Discover
+</div>
+
+<div class="create-btn"
+onclick="toggleGiftPanel()">
++
+</div>
+
+<div class="nav-item"
+onclick="showPage('messagePage',this)">
+<i class="fa-solid fa-message"></i>
+Messages
+</div>
+
+<div class="nav-item"
+onclick="showPage('profilePage',this)">
+<i class="fa-solid fa-user"></i>
+Profile
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* PAGE NAVIGATION */
+
+function showPage(pageId, el){
+
+document.querySelectorAll('.page')
+.forEach(p=>p.classList.remove('active'));
+
+document.getElementById(pageId)
+.classList.add('active');
+
+document.querySelectorAll('.nav-item')
+.forEach(n=>n.classList.remove('active'));
+
+el.classList.add('active');
+
+}
+
+/* CHAT */
+
+function sendMessage(){
+
+const input =
+document.getElementById('messageInput');
+
+if(input.value.trim()==='') return;
+
+const box =
+document.getElementById('chatBox');
+
+const msg =
+document.createElement('div');
+
+msg.className='message sent';
+
+msg.innerHTML=
+`<div class="bubble">${input.value}</div>`;
+
+box.appendChild(msg);
+
+input.value='';
+
+box.scrollTop=box.scrollHeight;
+
+}
+
+/* VOICE RECORD */
+
+let mediaRecorder;
+let audioChunks=[];
+
+const recordBtn =
+document.getElementById('recordBtn');
+
+recordBtn.addEventListener('mousedown',
+startRecording);
+
+recordBtn.addEventListener('mouseup',
+stopRecording);
+
+async function startRecording(){
+
+const stream =
+await navigator.mediaDevices
+.getUserMedia({audio:true});
+
+mediaRecorder =
+new MediaRecorder(stream);
+
+mediaRecorder.start();
+
+audioChunks=[];
+
+mediaRecorder.ondataavailable =
+e=>{
+audioChunks.push(e.data);
+};
+
+recordBtn.innerText='Recording...';
+
+}
+
+function stopRecording(){
+
+mediaRecorder.stop();
+
+mediaRecorder.onstop=()=>{
+
+const audioBlob =
+new Blob(audioChunks);
+
+const audioURL =
+URL.createObjectURL(audioBlob);
+
+const box =
+document.getElementById('chatBox');
+
+const msg =
+document.createElement('div');
+
+msg.className='message sent';
+
+msg.innerHTML=
+`
+<div class="bubble">
+<audio controls src="${audioURL}"></audio>
+</div>
+`;
+
+box.appendChild(msg);
+
+box.scrollTop=box.scrollHeight;
+
+};
+
+recordBtn.innerText='🎤 Hold To Talk';
+
+}
+
+/* GIFTS */
+
+function toggleGiftPanel(){
+
+const panel =
+document.getElementById('giftPanel');
+
+panel.style.display =
+panel.style.display==='block'
+?'none':'block';
+
+}
+
+function sendGift(gift){
+
+const anim =
+document.getElementById('giftAnimation');
+
+anim.innerText=gift;
+
+anim.style.display='block';
+
+setTimeout(()=>{
+anim.style.display='none';
+},2000);
+
+}
+
+/* AGORA RTC */
+
+const APP_ID = "srv-d7tdnn77f7vs739rntj0";
+
+const TOKEN = null;
+
+const CHANNEL = "gmatrix-room";
+
+const client =
+AgoraRTC.createClient({mode:"rtc",
+codec:"vp8"});
+
+async function joinRoom(){
+
+await client.join(
+APP_ID,
+CHANNEL,
+TOKEN,
+null
+);
+
+const localTrack =
+await AgoraRTC
+.createMicrophoneAudioTrack();
+
+await client.publish([localTrack]);
+
+console.log("Joined Room");
+
+client.on("user-published",
+async(user,mediaType)=>{
+
+await client.subscribe(user,
+mediaType);
+
+if(mediaType==="audio"){
+
+user.audioTrack.play();
+
+}
+
+});
+
+}
+
+joinRoom();
+
+</script>
+
 </body>
 </html>
