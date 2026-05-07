@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>G-Matrix Dating</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:linear-gradient(to bottom,#04111f,#072742,#03111d);
+color:white;
+overflow-x:hidden;
+}
+
+.hidden{
+display:none!important;
+}
+
+.page{
+padding-bottom:90px;
+}
+
+.header{
+padding:20px;
+font-size:28px;
+font-weight:bold;
+}
+
+.user-card{
+margin:15px;
+padding:15px;
+border-radius:20px;
+background:rgba(255,255,255,0.08);
+display:flex;
+align-items:center;
+gap:15px;
+}
+
+.avatar{
+width:65px;
+height:65px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+font-weight:bold;
+color:white;
+position:relative;
+}
+
+.talking{
+animation:pulse 1s infinite;
+box-shadow:0 0 0 0 #00ffcc;
+}
+
+@keyframes pulse{
+0%{transform:scale(1);box-shadow:0 0 0 0 rgba(0,255,204,.7)}
+70%{transform:scale(1.05);box-shadow:0 0 0 20px rgba(0,255,204,0)}
+100%{transform:scale(1);}
+}
+
+.room-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:15px;
+padding:15px;
+}
+
+.mic-seat{
+background:rgba(255,255,255,0.08);
+padding:15px;
+border-radius:20px;
+text-align:center;
+}
+
+.mic-seat .avatar{
+margin:auto;
+margin-bottom:10px;
+}
+
+.chat-box{
+height:220px;
+overflow-y:auto;
+margin:15px;
+padding:15px;
+border-radius:20px;
+background:rgba(255,255,255,0.05);
+}
+
+.message{
+padding:10px;
+border-radius:12px;
+background:#14324f;
+margin-bottom:10px;
+}
+
+.chat-input{
+display:flex;
+gap:10px;
+padding:15px;
+}
+
+.chat-input input{
+flex:1;
+padding:15px;
+border:none;
+border-radius:15px;
+font-size:16px;
+}
+
+.chat-input button{
+background:#14d8c4;
+border:none;
+color:white;
+padding:15px 20px;
+border-radius:15px;
+font-weight:bold;
+}
+
+.bottom-nav{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+height:75px;
+background:#071827;
+display:flex;
+justify-content:space-around;
+align-items:center;
+border-top:1px solid rgba(255,255,255,0.1);
+}
+
+.nav-btn{
+color:#bbb;
+font-size:24px;
+text-align:center;
+}
+
+.nav-btn.active{
+color:#15e0d0;
+}
+
+.overlay{
+position:fixed;
+inset:0;
+background:#000d;
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:999;
+}
+
+.signup-box{
+width:90%;
+background:#0c2035;
+padding:25px;
+border-radius:20px;
+}
+
+.signup-box h2{
+margin-bottom:15px;
+}
+
+.signup-box input{
+width:100%;
+padding:15px;
+border:none;
+border-radius:15px;
+margin-bottom:15px;
+}
+
+.signup-box button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:15px;
+background:#17d8ca;
+color:white;
+font-size:18px;
+font-weight:bold;
+}
+
+.voice-btn{
+width:100%;
+padding:18px;
+margin:15px;
+border:none;
+border-radius:20px;
+background:#ff4fa1;
+color:white;
+font-size:18px;
+font-weight:bold;
+}
+
+.voice-note{
+background:#1e4f73;
+padding:10px;
+border-radius:12px;
+margin-top:10px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="signupOverlay" class="overlay">
+<div class="signup-box">
+<h2>Welcome To G-Matrix</h2>
+<input type="text" id="nameInput" placeholder="Enter your name">
+<button onclick="startApp()">Enter App</button>
+</div>
+</div>
+
+<div id="homePage" class="page">
+<div class="header">G-Matrix</div>
+
+<div class="user-card">
+<div class="avatar" id="profileAvatar">S</div>
+<div>
+<h2 id="profileName">User</h2>
+<p id="profileId">ID: 000000</p>
+</div>
+</div>
+
+<div class="room-grid">
+<div class="mic-seat"><div class="avatar" id="a1">A</div><p>Seat 1</p></div>
+<div class="mic-seat"><div class="avatar" id="a2">B</div><p>Seat 2</p></div>
+<div class="mic-seat"><div class="avatar" id="a3">C</div><p>Seat 3</p></div>
+<div class="mic-seat"><div class="avatar" id="a4">D</div><p>Seat 4</p></div>
+<div class="mic-seat"><div class="avatar" id="a5">E</div><p>Seat 5</p></div>
+<div class="mic-seat"><div class="avatar" id="a6">F</div><p>Seat 6</p></div>
+<div class="mic-seat"><div class="avatar" id="a7">G</div><p>Seat 7</p></div>
+<div class="mic-seat"><div class="avatar" id="a8">H</div><p>Seat 8</p></div>
+</div>
+
+<div class="chat-box" id="chatBox"></div>
+
+<div class="chat-input">
+<input type="text" id="chatInput" placeholder="Send message...">
+<button onclick="sendMessage()">Send</button>
+</div>
+</div>
+
+<div id="messagePage" class="page hidden">
+<div class="header">Voice Notes</div>
+<button class="voice-btn" id="recordBtn">
+Hold To Talk
+</button>
+
+<div id="voiceMessages"></div>
+</div>
+
+<div class="bottom-nav">
+<div class="nav-btn active" onclick="showPage('homePage',this)">
+<i class="fa-solid fa-house"></i>
+</div>
+
+<div class="nav-btn" onclick="showPage('messagePage',this)">
+<i class="fa-solid fa-message"></i>
+</div>
+</div>
+
+<script>
+
+// ============================
+// CONFIG
+// ============================
+
+const APP_ID = '08f3860e6a9f4775b0b5acefe96b2b51';
+const CHANNEL = 'gmatrix-room';
+
+// Replace with your Render URL
+const SERVER_URL = 'https://g-matrix.onrender.com';
+
+const socket = io(SERVER_URL);
+
+let userData = null;
+let mediaRecorder;
+let audioChunks = [];
+let agoraClient;
+let localTrack;
+
+
+// ============================
+// USER SETUP
+// ============================
+
+function generateId(){
+return Math.floor(100000 + Math.random()*900000);
+}
+
+function randomColor(){
+const colors=[
+'#14d8c4',
+'#ff4fa1',
+'#5b7fff',
+'#ff9f43',
+'#8e44ad'
+];
+return colors[Math.floor(Math.random()*colors.length)];
+}
+
+function startApp(){
+const name=document.getElementById('nameInput').value.trim();
+
+if(!name)return alert('Enter name');
+
+userData={
+name,
+id:generateId(),
+color:randomColor()
+};
+
+localStorage.setItem('gmatrix_user',JSON.stringify(userData));
+
+initUser();
+
+document.getElementById('signupOverlay').classList.add('hidden');
+
+joinAgora();
+}
+
+function initUser(){
+const saved=JSON.parse(localStorage.getItem('gmatrix_user'));
+if(saved){
+userData=saved;
+}
+
+if(!userData)return;
+
+const avatar=document.getElementById('profileAvatar');
+avatar.innerText=userData.name.charAt(0).toUpperCase();
+avatar.style.background=userData.color;
+
+
+document.getElementById('profileName').innerText=userData.name;
+document.getElementById('profileId').innerText='ID: '+userData.id;
+}
+
+window.onload=()=>{
+const saved=localStorage.getItem('gmatrix_user');
+if(saved){
+userData=JSON.parse(saved);
+initUser();
+document.getElementById('signupOverlay').classList.add('hidden');
+joinAgora();
+}
+}
+
+// ============================
+// PAGE SWITCH
+// ============================
+
+function showPage(id,btn){
+document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+
+document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
+btn.classList.add('active');
+}
+
+// ============================
+// CHAT
+// ============================
+
+function sendMessage(){
+const input=document.getElementById('chatInput');
+const text=input.value.trim();
+if(!text)return;
+
+socket.emit('chat-message',{
+name:userData.name,
+text
+});
+
+input.value='';
+}
+
+socket.on('chat-message',data=>{
+const div=document.createElement('div');
+div.className='message';
+div.innerHTML=`<b>${data.name}</b><br>${data.text}`;
+document.getElementById('chatBox').appendChild(div);
+});
+
+// ============================
+// AGORA VOICE CHAT
+// ============================
+
+async function joinAgora(){
+
+agoraClient = AgoraRTC.createClient({ mode:'rtc', codec:'vp8' });
+
+await agoraClient.join(APP_ID,CHANNEL,null,String(userData.id));
+
+localTrack = await AgoraRTC.createMicrophoneAudioTrack();
+
+await agoraClient.publish([localTrack]);
+
+agoraClient.on('user-published', async(user,mediaType)=>{
+
+await agoraClient.subscribe(user,mediaType);
+
+if(mediaType==='audio'){
+user.audioTrack.play();
+}
+
+});
+
+setInterval(()=>{
+if(localTrack){
+const level=localTrack.getVolumeLevel();
+const avatar=document.getElementById('profileAvatar');
+
+if(level>0.6){
+avatar.classList.add('talking');
+}else{
+avatar.classList.remove('talking');
+}
+}
+},200);
+}
+
+// ============================
+// VOICE NOTE
+// ============================
+
+const recordBtn=document.getElementById('recordBtn');
+
+recordBtn.addEventListener('touchstart',startRecording);
+recordBtn.addEventListener('touchend',stopRecording);
+
+recordBtn.addEventListener('mousedown',startRecording);
+recordBtn.addEventListener('mouseup',stopRecording);
+
+async function startRecording(){
+const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+
+mediaRecorder = new MediaRecorder(stream);
+audioChunks=[];
+
+mediaRecorder.ondataavailable=e=>{
+audioChunks.push(e.data);
+}
+
+mediaRecorder.onstop=()=>{
+const blob=new Blob(audioChunks,{type:'audio/webm'});
+const url=URL.createObjectURL(blob);
+
+const div=document.createElement('div');
+div.className='voice-note';
+div.innerHTML=`
+<b>${userData.name}</b><br>
+<audio controls src="${url}"></audio>
+`;
+
+
+document.getElementById('voiceMessages').appendChild(div);
+}
+
+mediaRecorder.start();
+recordBtn.innerText='Recording...';
+}
+
+function stopRecording(){
+if(mediaRecorder){
+mediaRecorder.stop();
+recordBtn.innerText='Hold To Talk';
+}
+}
+
+</script>
+</body>
+</html>
