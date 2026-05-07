@@ -2,843 +2,839 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>G-Matrix</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>G‑Matrix Live</title>
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 
 <style>
-
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:Arial, sans-serif;
+font-family:'Poppins',sans-serif;
 }
 
 body{
-background:#0d0d14;
+background:linear-gradient(180deg,#061b24,#092b39,#0d3949);
 color:white;
 overflow:hidden;
 height:100vh;
 }
 
-.app{
-display:flex;
-flex-direction:column;
-height:100vh;
+:root{
+--teal:#1ee6c1;
+--pink:#ff4fb7;
+--dark:#08131d;
+--card:#102432;
+--card2:#132b3d;
+--white:#ffffff;
 }
 
-/* TOP BAR */
+.app{
+height:100vh;
+display:flex;
+flex-direction:column;
+}
 
-.top-bar{
-height:60px;
-background:linear-gradient(90deg,#00c6a2,#ff4da6);
+.topbar{
+height:70px;
 display:flex;
 align-items:center;
 justify-content:space-between;
-padding:0 15px;
-font-weight:bold;
+padding:0 18px;
+background:rgba(0,0,0,.15);
+backdrop-filter:blur(10px);
 }
 
-.wallet{
-display:flex;
-gap:12px;
-font-size:14px;
+.logo{
+font-size:24px;
+font-weight:700;
+background:linear-gradient(90deg,var(--teal),var(--pink));
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
 }
-
-.wallet span{
-background:rgba(255,255,255,0.2);
-padding:6px 10px;
-border-radius:20px;
-}
-
-/* PAGES */
 
 .page{
 display:none;
 flex:1;
-overflow-y:auto;
-padding-bottom:80px;
+overflow:auto;
+padding:15px 15px 110px;
 }
 
 .page.active{
 display:block;
 }
 
-/* HOME */
-
-.live-card{
-background:#181824;
-margin:12px;
-border-radius:20px;
-padding:15px;
-box-shadow:0 0 15px rgba(0,0,0,0.4);
-}
-
-.live-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.live-title{
-font-size:18px;
-font-weight:bold;
-}
-
-.live-users{
-font-size:13px;
-opacity:0.8;
-}
-
-/* LIVE ROOM */
-
-.live-room{
-padding:15px;
-}
-
-.host-seat{
-display:flex;
-justify-content:center;
-margin-bottom:25px;
-}
-
-.host-circle{
-width:110px;
-height:110px;
-border-radius:50%;
-background:linear-gradient(135deg,#00d9a5,#ff4da6);
-display:flex;
-align-items:center;
-justify-content:center;
+.hero{
+background:linear-gradient(135deg,#15d9b6,#2b75ff,#ff4fb7);
+border-radius:28px;
+padding:20px;
+margin-bottom:18px;
 position:relative;
-animation:pulse 2s infinite;
+overflow:hidden;
 }
 
-.host-circle img{
-width:90px;
-height:90px;
+.hero::after{
+content:'';
+position:absolute;
+width:220px;
+height:220px;
+background:rgba(255,255,255,.12);
 border-radius:50%;
-object-fit:cover;
+top:-80px;
+right:-50px;
+}
+
+.userRow{
+display:flex;
+align-items:center;
+gap:14px;
+position:relative;
+z-index:2;
+}
+
+.avatar{
+width:70px;
+height:70px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+font-weight:700;
+color:#fff;
+position:relative;
 }
 
 .voice-ring{
 position:absolute;
-width:130px;
-height:130px;
-border:4px solid #00ffae;
+inset:-8px;
+border:4px solid var(--teal);
 border-radius:50%;
-animation:voicePulse 1s infinite;
+opacity:0;
 }
 
-@keyframes voicePulse{
-0%{transform:scale(1);opacity:1;}
-100%{transform:scale(1.4);opacity:0;}
+.voice-ring.active{
+animation:pulse 1s infinite;
+opacity:1;
 }
 
 @keyframes pulse{
-0%{transform:scale(1);}
-50%{transform:scale(1.03);}
-100%{transform:scale(1);}
+0%{transform:scale(1);opacity:.9}
+70%{transform:scale(1.25);opacity:0}
+100%{transform:scale(1.25);opacity:0}
 }
 
-.mic-grid{
+.userMeta h2{
+font-size:22px;
+}
+
+.userMeta p{
+opacity:.8;
+font-size:14px;
+}
+
+.stats{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin-top:18px;
+}
+
+.card{
+background:rgba(255,255,255,.1);
+border-radius:22px;
+padding:16px;
+backdrop-filter:blur(12px);
+}
+
+.card h4{
+font-size:14px;
+opacity:.7;
+margin-bottom:8px;
+}
+
+.card strong{
+font-size:22px;
+}
+
+.roomHeader{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:18px;
+}
+
+.roomGrid{
 display:grid;
 grid-template-columns:repeat(4,1fr);
-gap:15px;
+gap:16px;
 }
 
-.mic-seat{
-background:#1f1f2d;
-border-radius:20px;
-padding:12px;
+.seat{
+background:linear-gradient(180deg,#12293d,#0c1b28);
+border-radius:22px;
+padding:12px 8px;
 text-align:center;
 position:relative;
+min-height:120px;
 }
 
-.mic-seat .seat-number{
-font-size:13px;
-opacity:0.7;
-}
-
-.mic-seat i{
-font-size:25px;
-margin-top:10px;
-color:#ff4da6;
-}
-
-/* AUDIENCE */
-
-.audience{
-margin-top:25px;
-background:#161622;
-padding:15px;
-border-radius:20px;
-max-height:150px;
-overflow-y:auto;
-}
-
-.audience-user{
-padding:8px;
-border-bottom:1px solid rgba(255,255,255,0.08);
-}
-
-/* CHAT */
-
-.chat-container{
-padding:15px;
-}
-
-.chat-box{
-background:#181824;
-padding:10px;
-border-radius:20px;
-height:60vh;
-overflow-y:auto;
-}
-
-.message{
-margin:10px 0;
-display:flex;
-flex-direction:column;
-}
-
-.message.sent{
-align-items:flex-end;
-}
-
-.bubble{
-padding:10px 15px;
-border-radius:20px;
-max-width:75%;
-}
-
-.sent .bubble{
-background:linear-gradient(90deg,#00c6a2,#ff4da6);
-}
-
-.received .bubble{
-background:#242438;
-}
-
-.chat-input{
-display:flex;
-margin-top:15px;
-gap:10px;
-}
-
-.chat-input input{
-flex:1;
-padding:12px;
-border:none;
-border-radius:30px;
-background:#1f1f2d;
-color:white;
-}
-
-.chat-input button{
-border:none;
-background:#ff4da6;
-color:white;
-width:50px;
-border-radius:50%;
-font-size:18px;
-}
-
-/* HOLD RECORD */
-
-.record-btn{
-margin-top:15px;
-width:100%;
-padding:15px;
-border:none;
-border-radius:30px;
-background:#00c6a2;
-color:white;
-font-weight:bold;
-}
-
-/* GIFTS */
-
-.gift-panel{
-position:fixed;
-bottom:80px;
-left:0;
-right:0;
-background:#181824;
-padding:20px;
-display:none;
-border-top-left-radius:25px;
-border-top-right-radius:25px;
-}
-
-.gifts{
-display:flex;
-justify-content:space-around;
-}
-
-.gift{
-text-align:center;
-cursor:pointer;
-}
-
-.gift i{
-font-size:35px;
-margin-bottom:5px;
-}
-
-.gift-animation{
-position:fixed;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-font-size:90px;
-display:none;
-animation:giftFly 2s forwards;
-}
-
-@keyframes giftFly{
-0%{
-opacity:0;
-transform:translate(-50%,50%) scale(0.5);
-}
-50%{
-opacity:1;
-}
-100%{
-opacity:0;
-transform:translate(-50%,-200%) scale(1.8);
-}
-}
-
-/* LEADERBOARD */
-
-.leaderboard{
-padding:15px;
-}
-
-.rank-card{
-background:#181824;
-margin-bottom:12px;
-padding:15px;
-border-radius:20px;
-display:flex;
-justify-content:space-between;
-}
-
-/* PROFILE */
-
-.profile{
-padding:20px;
-text-align:center;
-}
-
-.profile img{
-width:100px;
-height:100px;
-border-radius:50%;
-margin-bottom:15px;
-}
-
-/* NAVIGATION */
-
-.bottom-nav{
-height:70px;
-background:#11111a;
-display:flex;
-justify-content:space-around;
-align-items:center;
-position:fixed;
-bottom:0;
-left:0;
-right:0;
-border-top:1px solid rgba(255,255,255,0.08);
-}
-
-.nav-item{
-text-align:center;
-font-size:12px;
-color:#999;
-}
-
-.nav-item.active{
-color:#00d9a5;
-}
-
-.nav-item i{
-display:block;
-font-size:22px;
-margin-bottom:5px;
-}
-
-.create-btn{
-width:60px;
-height:60px;
-background:linear-gradient(135deg,#00c6a2,#ff4da6);
+.seatAvatar{
+width:58px;
+height:58px;
 border-radius:50%;
 display:flex;
 align-items:center;
 justify-content:center;
-margin-top:-30px;
-font-size:25px;
+margin:0 auto 8px;
+font-weight:700;
+font-size:22px;
+position:relative;
+}
+
+.seatName{
+font-size:13px;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.mic{
+position:absolute;
+right:8px;
+top:8px;
+background:var(--pink);
+width:26px;
+height:26px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:11px;
+}
+
+.chatWrap{
+margin-top:22px;
+background:#0e1d2a;
+border-radius:22px;
+padding:14px;
+height:280px;
+display:flex;
+flex-direction:column;
+}
+
+.messages{
+flex:1;
+overflow:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding-bottom:10px;
+}
+
+.msg{
+background:#173042;
+padding:10px 14px;
+border-radius:16px;
+max-width:85%;
+}
+
+.msg.me{
+margin-left:auto;
+background:linear-gradient(135deg,var(--teal),#1a94ff);
+}
+
+.chatInput{
+display:flex;
+gap:10px;
+margin-top:10px;
+}
+
+.chatInput input{
+flex:1;
+border:none;
+outline:none;
+border-radius:16px;
+padding:14px;
+background:#112434;
+color:#fff;
+}
+
+.sendBtn{
+width:54px;
+border:none;
+border-radius:16px;
+background:linear-gradient(135deg,var(--pink),#ff8b45);
+color:#fff;
+font-size:18px;
+}
+
+.bottomNav{
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+height:82px;
+background:rgba(7,17,26,.95);
+backdrop-filter:blur(18px);
+display:flex;
+align-items:center;
+justify-content:space-around;
+z-index:99;
+border-top:1px solid rgba(255,255,255,.08);
+}
+
+.navItem{
+color:#7e96aa;
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:6px;
+font-size:12px;
+}
+
+.navItem.active{
+color:var(--teal);
+}
+
+.navCenter{
+width:62px;
+height:62px;
+border-radius:50%;
+background:linear-gradient(135deg,var(--pink),var(--teal));
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:24px;
+margin-top:-32px;
+box-shadow:0 0 30px rgba(30,230,193,.5);
+}
+
+.overlay{
+position:fixed;
+inset:0;
+background:linear-gradient(180deg,#041018,#0a1d2a);
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+z-index:999;
+}
+
+.signupBox{
+width:100%;
+max-width:420px;
+background:linear-gradient(180deg,#112536,#0b1822);
+border-radius:30px;
+padding:28px;
+text-align:center;
+}
+
+.signupBox h1{
+font-size:32px;
+margin-bottom:12px;
+background:linear-gradient(90deg,var(--teal),var(--pink));
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.signupBox p{
+opacity:.7;
+margin-bottom:25px;
+}
+
+.signupBox input{
+width:100%;
+padding:16px;
+border-radius:18px;
+background:#0f2230;
+border:none;
+outline:none;
+color:#fff;
+margin-bottom:18px;
+font-size:16px;
+}
+
+.primaryBtn{
+width:100%;
+padding:16px;
+border:none;
+border-radius:18px;
+background:linear-gradient(135deg,var(--teal),#2e7fff,var(--pink));
 color:white;
+font-size:16px;
+font-weight:700;
 }
 
-/* RESPONSIVE */
-
-@media(max-width:480px){
-
-.mic-grid{
-grid-template-columns:repeat(3,1fr);
+.profileCard{
+background:linear-gradient(180deg,#112536,#0b1822);
+border-radius:28px;
+padding:25px;
+text-align:center;
 }
 
+.bigAvatar{
+width:110px;
+height:110px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:46px;
+font-weight:700;
+margin:0 auto 20px;
 }
 
+.voiceNoteBtn{
+background:linear-gradient(135deg,var(--pink),#ff8f4d);
+padding:16px;
+text-align:center;
+border-radius:20px;
+font-weight:700;
+user-select:none;
+}
+
+.voiceBubble{
+background:#162c3d;
+padding:12px 16px;
+border-radius:18px;
+display:flex;
+align-items:center;
+gap:10px;
+width:max-content;
+max-width:100%;
+}
+
+@media(max-width:768px){
+.roomGrid{
+grid-template-columns:repeat(2,1fr);
+}
+}
 </style>
 </head>
-
 <body>
 
+<div id="signupOverlay" class="overlay">
+<div class="signupBox">
+<h1>G‑Matrix</h1>
+<p>Live Audio • Agency • Party Rooms</p>
+<input type="text" id="nameInput" placeholder="Enter your name" />
+<button class="primaryBtn" onclick="enterApp()">Enter G‑Matrix</button>
+</div>
+</div>
+
 <div class="app">
-
-<!-- TOP BAR -->
-
-<div class="top-bar">
-<div>G-Matrix</div>
-
-<div class="wallet">
-<span><i class="fa-solid fa-coins"></i> 15000</span>
-<span><i class="fa-solid fa-gem"></i> 320</span>
+<div class="topbar">
+<div class="logo">G‑Matrix</div>
+<div>
+<i class="fa-solid fa-bell"></i>
 </div>
 </div>
 
-<!-- HOME PAGE -->
+<div id="home" class="page active">
+<div class="hero">
+<div class="userRow">
+<div id="profileAvatar" class="avatar">
+<div id="mainVoiceRing" class="voice-ring"></div>
+A
+</div>
+<div class="userMeta">
+<h2 id="profileName">Guest</h2>
+<p id="profileId">ID: 000000</p>
+</div>
+</div>
 
-<div class="page active" id="homePage">
-
-<div class="live-card">
-<div class="live-header">
-<div class="live-title">Music Lovers Room</div>
-<div class="live-users">
-<i class="fa-solid fa-users"></i> 1.2K
+<div class="stats">
+<div class="card">
+<h4>Total Coins</h4>
+<strong id="coinCount">0</strong>
+</div>
+<div class="card">
+<h4>Level</h4>
+<strong>VIP 1</strong>
 </div>
 </div>
 </div>
 
-<div class="live-room">
-
-<div class="host-seat">
-
-<div class="host-circle">
-<div class="voice-ring"></div>
-
-<img src="https://i.pravatar.cc/200"/>
+<div class="roomHeader">
+<h2>Live Party Room</h2>
+<button class="primaryBtn" style="width:160px;padding:12px" onclick="joinVoiceRoom()">
+<i class="fa-solid fa-microphone"></i> Join Room
+</button>
 </div>
 
-</div>
+<div class="roomGrid" id="roomGrid"></div>
 
-<div class="mic-grid">
-
-<div class="mic-seat">
-<div class="seat-number">1</div>
-<i class="fa-solid fa-microphone"></i>
-</div>
-
-<div class="mic-seat">
-<div class="seat-number">2</div>
-<i class="fa-solid fa-microphone"></i>
-</div>
-
-<div class="mic-seat">
-<div class="seat-number">3</div>
-<i class="fa-solid fa-microphone"></i>
-</div>
-
-<div class="mic-seat">
-<div class="seat-number">4</div>
-<i class="fa-solid fa-microphone"></i>
-</div>
-
-<div class="mic-seat">
-<div class="seat-number">5</div>
-<i class="fa-solid fa-microphone"></i>
-</div>
-
-<div class="mic-seat">
-<div class="seat-number">6</div>
-<i class="fa-solid fa-microphone"></i>
-</div>
-
-<div class="mic-seat">
-<div class="seat-number">7</div>
-<i class="fa-solid fa-microphone"></i>
-</div>
-
-<div class="mic-seat">
-<div class="seat-number">8</div>
-<i class="fa-solid fa-microphone"></i>
-</div>
-
-</div>
-
-<div class="audience">
-<div class="audience-user">Ahmed joined</div>
-<div class="audience-user">Sara listening</div>
-<div class="audience-user">Mike joined</div>
-<div class="audience-user">John listening</div>
-</div>
-
-</div>
-
-</div>
-
-<!-- MESSAGES PAGE -->
-
-<div class="page" id="messagePage">
-
-<div class="chat-container">
-
-<div class="chat-box" id="chatBox">
-
-<div class="message received">
-<div class="bubble">
-Hello 👋
-</div>
-</div>
-
-</div>
-
-<div class="chat-input">
-
-<input type="text" id="messageInput"
-placeholder="Type message...">
-
-<button onclick="sendMessage()">
+<div class="chatWrap">
+<div id="messages" class="messages"></div>
+<div class="chatInput">
+<input id="chatText" type="text" placeholder="Say something..." />
+<button class="sendBtn" onclick="sendMessage()">
 <i class="fa-solid fa-paper-plane"></i>
 </button>
-
+</div>
+</div>
 </div>
 
-<button class="record-btn"
-id="recordBtn">
-🎤 Hold To Talk
-</button>
-
+<div id="discover" class="page">
+<div class="hero">
+<h2 style="margin-bottom:15px">Trending Rooms</h2>
+<div class="stats">
+<div class="card"><strong>#Music</strong></div>
+<div class="card"><strong>#Lifestyle</strong></div>
+<div class="card"><strong>#Gaming</strong></div>
+<div class="card"><strong>#Dating</strong></div>
+</div>
+</div>
 </div>
 
+<div id="messagesPage" class="page">
+<div class="profileCard">
+<h2 style="margin-bottom:20px">Private Chat</h2>
+<div id="privateMessages" class="messages" style="height:300px"></div>
+<div class="voiceNoteBtn" id="recordBtn">
+🎤 Hold To Record Voice Note
+</div>
+</div>
 </div>
 
-<!-- LEADERBOARD -->
-
-<div class="page" id="discoverPage">
-
-<div class="leaderboard">
-
-<div class="rank-card">
-<div>#1 Ali</div>
-<div>250K Coins</div>
-</div>
-
-<div class="rank-card">
-<div>#2 Mona</div>
-<div>210K Coins</div>
-</div>
-
-<div class="rank-card">
-<div>#3 Kevin</div>
-<div>180K Coins</div>
-</div>
-
-</div>
-
-</div>
-
-<!-- PROFILE -->
-
-<div class="page" id="profilePage">
-
-<div class="profile">
-
-<img src="https://i.pravatar.cc/300"/>
-
-<h2>Seid</h2>
-
-<p>@gmatrix_user</p>
-
+<div id="profile" class="page">
+<div class="profileCard">
+<div id="profileBigAvatar" class="bigAvatar">A</div>
+<h2 id="profileBigName">Guest</h2>
+<p id="profileBigId">ID:000000</p>
 <br>
-
-<h3>Followers: 12.4K</h3>
-<h3>Following: 650</h3>
-
+<div class="card">
+<h4>Agency Rank</h4>
+<strong>50+</strong>
+</div>
+</div>
 </div>
 
-</div>
-
-<!-- GIFT PANEL -->
-
-<div class="gift-panel" id="giftPanel">
-
-<div class="gifts">
-
-<div class="gift" onclick="sendGift('🌹')">
-<i class="fa-solid fa-rose"></i>
-<p>Rose</p>
-</div>
-
-<div class="gift" onclick="sendGift('👑')">
-<i class="fa-solid fa-crown"></i>
-<p>Crown</p>
-</div>
-
-<div class="gift" onclick="sendGift('🚗')">
-<i class="fa-solid fa-car"></i>
-<p>Supercar</p>
-</div>
-
-</div>
-
-</div>
-
-<div class="gift-animation"
-id="giftAnimation"></div>
-
-<!-- NAVIGATION -->
-
-<div class="bottom-nav">
-
-<div class="nav-item active"
-onclick="showPage('homePage',this)">
+<div class="bottomNav">
+<div class="navItem active" onclick="switchPage('home',this)">
 <i class="fa-solid fa-house"></i>
-Home
+<span>Home</span>
 </div>
 
-<div class="nav-item"
-onclick="showPage('discoverPage',this)">
+<div class="navItem" onclick="switchPage('discover',this)">
 <i class="fa-solid fa-compass"></i>
-Discover
+<span>Discover</span>
 </div>
 
-<div class="create-btn"
-onclick="toggleGiftPanel()">
-+
+<div class="navCenter">
+<i class="fa-solid fa-plus"></i>
 </div>
 
-<div class="nav-item"
-onclick="showPage('messagePage',this)">
+<div class="navItem" onclick="switchPage('messagesPage',this)">
 <i class="fa-solid fa-message"></i>
-Messages
+<span>Message</span>
 </div>
 
-<div class="nav-item"
-onclick="showPage('profilePage',this)">
+<div class="navItem" onclick="switchPage('profile',this)">
 <i class="fa-solid fa-user"></i>
-Profile
+<span>Profile</span>
 </div>
-
 </div>
-
 </div>
 
 <script>
+// =========================
+// CONFIG
+// =========================
 
-/* PAGE NAVIGATION */
+const APP_ID = "08f3860e6a9f4775b0b5acefe96b2b51";
+const TOKEN = null;
+const CHANNEL = "gmatrix-live";
 
-function showPage(pageId, el){
+// =========================
+// USER SYSTEM
+// =========================
 
-document.querySelectorAll('.page')
-.forEach(p=>p.classList.remove('active'));
+let currentUser = null;
 
-document.getElementById(pageId)
-.classList.add('active');
-
-document.querySelectorAll('.nav-item')
-.forEach(n=>n.classList.remove('active'));
-
-el.classList.add('active');
-
+function randomColor(){
+const colors=[
+'#15d9b6','#ff4fb7','#ff9d2f','#6c63ff','#2f8fff','#17c964','#ff5c5c','#8e44ad'
+];
+return colors[Math.floor(Math.random()*colors.length)];
 }
 
-/* CHAT */
+function generateId(){
+return Math.floor(100000 + Math.random()*900000);
+}
+
+function enterApp(){
+const name=document.getElementById('nameInput').value.trim();
+if(!name)return alert('Please enter your name');
+
+const id=generateId();
+const color=randomColor();
+
+currentUser={
+name,
+id,
+color
+};
+
+localStorage.setItem('gmatrix-user',JSON.stringify(currentUser));
+
+setupUserUI();
+
+document.getElementById('signupOverlay').style.display='none';
+
+createSeats();
+}
+
+function setupUserUI(){
+if(!currentUser)return;
+
+const first=currentUser.name.charAt(0).toUpperCase();
+
+const avatars=[
+'document.getElementById("profileAvatar")',
+'document.getElementById("profileBigAvatar")'
+];
+
+avatars.forEach(v=>{
+const el=eval(v);
+el.innerHTML=`<div class="voice-ring" id="${el.id}Ring"></div>${first}`;
+el.style.background=currentUser.color;
+});
+
+profileName.innerText=currentUser.name;
+profileBigName.innerText=currentUser.name;
+profileId.innerText='ID: '+currentUser.id;
+profileBigId.innerText='ID: '+currentUser.id;
+}
+
+window.onload=()=>{
+const saved=localStorage.getItem('gmatrix-user');
+if(saved){
+currentUser=JSON.parse(saved);
+setupUserUI();
+document.getElementById('signupOverlay').style.display='none';
+createSeats();
+}
+}
+
+// =========================
+// PAGE NAVIGATION
+// =========================
+
+function switchPage(id,el){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+
+document.querySelectorAll('.navItem').forEach(n=>n.classList.remove('active'));
+el.classList.add('active');
+}
+
+// =========================
+// LIVE ROOM
+// =========================
+
+function createSeats(){
+const grid=document.getElementById('roomGrid');
+grid.innerHTML='';
+
+for(let i=0;i<8;i++){
+const seat=document.createElement('div');
+seat.className='seat';
+
+const bg=randomColor();
+
+seat.innerHTML=`
+<div class="mic"><i class="fa-solid fa-microphone"></i></div>
+<div class="seatAvatar" id="seat-${i}" style="background:${bg}">
+<div class="voice-ring" id="ring-${i}"></div>
+${i===0 && currentUser ? currentUser.name.charAt(0).toUpperCase() : '+'}
+</div>
+<div class="seatName">${i===0 && currentUser ? currentUser.name : 'Empty Seat'}</div>
+`;
+
+grid.appendChild(seat);
+}
+}
+
+// =========================
+// CHAT
+// =========================
 
 function sendMessage(){
+const input=document.getElementById('chatText');
+const text=input.value.trim();
+if(!text)return;
 
-const input =
-document.getElementById('messageInput');
-
-if(input.value.trim()==='') return;
-
-const box =
-document.getElementById('chatBox');
-
-const msg =
-document.createElement('div');
-
-msg.className='message sent';
-
-msg.innerHTML=
-`<div class="bubble">${input.value}</div>`;
-
-box.appendChild(msg);
+appendMessage(currentUser.name,text,true);
 
 input.value='';
-
-box.scrollTop=box.scrollHeight;
-
 }
 
-/* VOICE RECORD */
+function appendMessage(user,text,isMe=false){
+const box=document.createElement('div');
+box.className='msg'+(isMe?' me':'');
+box.innerHTML=`<strong>${user}</strong><br>${text}`;
+
+messages.appendChild(box);
+messages.scrollTop=messages.scrollHeight;
+}
+
+// =========================
+// AGORA RTC
+// =========================
+
+let client;
+let localAudioTrack;
+
+async function joinVoiceRoom(){
+try{
+client = AgoraRTC.createClient({mode:'rtc',codec:'vp8'});
+
+await client.join(APP_ID,CHANNEL,TOKEN,null);
+
+localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+
+await client.publish([localAudioTrack]);
+
+appendMessage('System','You joined the voice room');
+
+startAudioLevelMonitor();
+
+client.on('user-published', async(user, mediaType)=>{
+await client.subscribe(user, mediaType);
+
+if(mediaType==='audio'){
+user.audioTrack.play();
+}
+});
+
+client.on('user-left',()=>{
+appendMessage('System','A user left the room');
+});
+
+}catch(err){
+console.error(err);
+alert('Agora connection failed. Add your Agora APP ID.');
+}
+}
+
+function startAudioLevelMonitor(){
+setInterval(()=>{
+if(!localAudioTrack)return;
+
+const level=localAudioTrack.getVolumeLevel();
+
+const ring=document.getElementById('ring-0');
+const profileRing=document.getElementById('profileAvatarRing');
+
+if(level>0.1){
+ring.classList.add('active');
+if(profileRing)profileRing.classList.add('active');
+}else{
+ring.classList.remove('active');
+if(profileRing)profileRing.classList.remove('active');
+}
+},200);
+}
+
+// =========================
+// VOICE NOTES
+// =========================
 
 let mediaRecorder;
 let audioChunks=[];
 
-const recordBtn =
-document.getElementById('recordBtn');
-
-recordBtn.addEventListener('mousedown',
-startRecording);
-
-recordBtn.addEventListener('mouseup',
-stopRecording);
+const recordBtn=document.getElementById('recordBtn');
 
 async function startRecording(){
+try{
+const stream=await navigator.mediaDevices.getUserMedia({audio:true});
 
-const stream =
-await navigator.mediaDevices
-.getUserMedia({audio:true});
-
-mediaRecorder =
-new MediaRecorder(stream);
-
-mediaRecorder.start();
-
+mediaRecorder=new MediaRecorder(stream);
 audioChunks=[];
 
-mediaRecorder.ondataavailable =
-e=>{
+mediaRecorder.ondataavailable=e=>{
 audioChunks.push(e.data);
-};
+}
 
-recordBtn.innerText='Recording...';
+mediaRecorder.onstop=()=>{
+const blob=new Blob(audioChunks,{type:'audio/webm'});
+const url=URL.createObjectURL(blob);
 
+const bubble=document.createElement('div');
+bubble.className='voiceBubble';
+bubble.innerHTML=`
+<i class="fa-solid fa-play"></i>
+<audio controls src="${url}"></audio>
+`;
+
+privateMessages.appendChild(bubble);
+privateMessages.scrollTop=privateMessages.scrollHeight;
+}
+
+mediaRecorder.start();
+recordBtn.innerHTML='🔴 Recording... Release to Send';
+
+}catch(err){
+alert('Microphone access denied');
+}
 }
 
 function stopRecording(){
-
+if(mediaRecorder && mediaRecorder.state!=='inactive'){
 mediaRecorder.stop();
-
-mediaRecorder.onstop=()=>{
-
-const audioBlob =
-new Blob(audioChunks);
-
-const audioURL =
-URL.createObjectURL(audioBlob);
-
-const box =
-document.getElementById('chatBox');
-
-const msg =
-document.createElement('div');
-
-msg.className='message sent';
-
-msg.innerHTML=
-`
-<div class="bubble">
-<audio controls src="${audioURL}"></audio>
-</div>
-`;
-
-box.appendChild(msg);
-
-box.scrollTop=box.scrollHeight;
-
-};
-
-recordBtn.innerText='🎤 Hold To Talk';
-
+recordBtn.innerHTML='🎤 Hold To Record Voice Note';
+}
 }
 
-/* GIFTS */
-
-function toggleGiftPanel(){
-
-const panel =
-document.getElementById('giftPanel');
-
-panel.style.display =
-panel.style.display==='block'
-?'none':'block';
-
-}
-
-function sendGift(gift){
-
-const anim =
-document.getElementById('giftAnimation');
-
-anim.innerText=gift;
-
-anim.style.display='block';
-
-setTimeout(()=>{
-anim.style.display='none';
-},2000);
-
-}
-
-/* AGORA RTC */
-
-const APP_ID = "srv-d7tdnn77f7vs739rntj0";
-
-const TOKEN = null;
-
-const CHANNEL = "gmatrix-room";
-
-const client =
-AgoraRTC.createClient({mode:"rtc",
-codec:"vp8"});
-
-async function joinRoom(){
-
-await client.join(
-APP_ID,
-CHANNEL,
-TOKEN,
-null
-);
-
-const localTrack =
-await AgoraRTC
-.createMicrophoneAudioTrack();
-
-await client.publish([localTrack]);
-
-console.log("Joined Room");
-
-client.on("user-published",
-async(user,mediaType)=>{
-
-await client.subscribe(user,
-mediaType);
-
-if(mediaType==="audio"){
-
-user.audioTrack.play();
-
-}
-
+recordBtn.addEventListener('touchstart',e=>{
+e.preventDefault();
+startRecording();
 });
 
+recordBtn.addEventListener('touchend',e=>{
+e.preventDefault();
+stopRecording();
+});
+
+recordBtn.addEventListener('mousedown',startRecording);
+recordBtn.addEventListener('mouseup',stopRecording);
+
+// =========================
+// GIFTS & ANIMATIONS
+// =========================
+
+function giftAnimation(){
+const gift=document.createElement('div');
+
+gift.innerHTML='🎁';
+gift.style.position='fixed';
+gift.style.left=Math.random()*window.innerWidth+'px';
+gift.style.bottom='100px';
+gift.style.fontSize='40px';
+gift.style.zIndex='999';
+gift.style.transition='all 3s linear';
+
+document.body.appendChild(gift);
+
+setTimeout(()=>{
+gift.style.transform='translateY(-600px) scale(1.5)';
+gift.style.opacity='0';
+},50);
+
+setTimeout(()=>gift.remove(),3000);
 }
 
-joinRoom();
+setInterval(()=>{
+if(Math.random()>.7)giftAnimation();
+},6000);
 
 </script>
-
 </body>
 </html>
