@@ -1,362 +1,251 @@
+// ================================
+// server.js
+// G-Matrix Live Voice Server
+// ================================
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
-const fs = require("fs");
-const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
+        origin: "*"
     }
 });
 
 const PORT = process.env.PORT || 3000;
 
-// =========================
-// STORAGE
-// =========================
+app.use(express.static(path.join(__dirname, "public")));
 
-const STORAGE = {
-    users: path.join(__dirname, "storage/users"),
-    rooms: path.join(__dirname, "storage/rooms"),
-    messages: path.join(__dirname, "storage/messages"),
-    voice: path.join(__dirname, "storage/voice"),
-    photos: path.join(__dirname, "storage/photos")
-};
-
-// Create folders automatically
-Object.values(STORAGE).forEach(folder => {
-    if (!fs.existsSync(folder)) {
-        fs.mkdirSync(folder, { recursive: true });
-    }
-});
-
-// =========================
-// EXPRESS
-// =========================
-
-app.use(cors());
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true }));
-
-// serve index.html directly
-app.use(express.static(__dirname));
-
-// uploads
-app.use("/storage", express.static(path.join(__dirname, "storage")));
-
-// MAIN ROUTE
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
+    res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-// =========================
-// HELPERS
-// =========================
+// =================================
+// ROOM STORAGE
+// =================================
 
-function generateRoomId() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+const rooms = {};
+
+// =================================
+// ROOM IDS
+// =================================
+
+const ROOM_IDS = [];
+
+for (let i = 100000; i <= 101500; i++) {
+    ROOM_IDS.push(i.toString());
 }
 
-function saveJSON(file, data) {
-    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+function generateRoomId(name) {
+
+    const used = Object.keys(rooms);
+
+    const free = ROOM_IDS.find(id => !used.includes(id));
+
+    if (free) return free;
+
+    return (
+        name.charAt(0).toUpperCase() +
+        Math.floor(100000 + Math.random() * 900000)
+    );
 }
 
-function readJSON(file) {
-    if (!fs.existsSync(file)) return null;
-    return JSON.parse(fs.readFileSync(file));
-}
-
-// =========================
-// MEMORY STORAGE
-// =========================
-
-let rooms = {};
-let users = {};
-
-// =========================
-// SOCKET.IO
-// =========================
+// =================================
+// SOCKETS
+// =================================
 
 io.on("connection", socket => {
 
-    console.log("USER CONNECTED:", socket.id);
+    console.log("USER CONNECTED");
 
-    // =========================
+    // ============================
     // HOST ROOM
-    // =========================
+    // ============================
 
     socket.on("host-room", data => {
 
-        const roomId = generateRoomId();
+        const roomId = generateRoomId(data.name);
 
         rooms[roomId] = {
-            host: socket.id,
-            hostName: data.name,
-            users: [],
-            mics: {},
-            createdAt: Date.now()
-        };
-
-        users[socket.id] = {
             roomId,
-            name: data.name,
-            role: "host"
+            hostName: data.name,
+            hostSocket: socket.id,
+            listeners: [],
+            speakers: [],
+            micRequests: []
         };
 
         socket.join(roomId);
 
-        // save room
-        saveJSON(
-            path.join(STORAGE.rooms, `${roomId}.json`),
-            rooms[roomId]
-        );
-
         socket.emit("room-created", {
             roomId,
-            host: true
+            hostName: data.name
         });
 
         console.log("ROOM CREATED:", roomId);
+
     });
 
-    // =========================
+    // ============================
     // JOIN ROOM
-    // =========================
+    // ============================
 
     socket.on("join-room", data => {
 
         const room = rooms[data.roomId];
 
         if (!room) {
-            socket.emit("error-message", "Room not found");
+            socket.emit("join-error", "Room not found");
+            return;
+        }
+
+        if (
+            room.hostName.toLowerCase().trim() !==
+            data.hostName.toLowerCase().trim()
+        ) {
+            socket.emit("join-error", "Wrong Host Name");
             return;
         }
 
         socket.join(data.roomId);
 
-        users[socket.id] = {
-            roomId: data.roomId,
-            name: data.name,
-            role: "listener"
-        };
-
-        room.users.push({
+        room.listeners.push({
             socketId: socket.id,
-            name: data.name,
-            mic: false,
-            muted: false
+            name: data.name
         });
 
-        io.to(data.roomId).emit("room-users", room.users);
+        io.to(room.hostSocket).emit("listener-update", {
+            total: room.listeners.length
+        });
 
-        socket.emit("joined-room", {
+        socket.emit("join-success", {
             roomId: data.roomId,
-            host: false
+            hostName: room.hostName
         });
 
-        console.log(data.name, "joined", data.roomId);
     });
 
-    // =========================
+    // ============================
     // APPLY MIC
-    // =========================
+    // ============================
 
-    socket.on("apply-mic", () => {
+    socket.on("apply-mic", data => {
 
-        const user = users[socket.id];
-        if (!user) return;
+        const room = rooms[data.roomId];
 
-        const room = rooms[user.roomId];
         if (!room) return;
 
-        const target = room.users.find(u => u.socketId === socket.id);
-
-        if (target) {
-            target.mic = true;
-        }
-
-        io.to(user.roomId).emit("room-users", room.users);
-    });
-
-    // =========================
-    // TOGGLE MIC
-    // =========================
-
-    socket.on("toggle-mic", state => {
-
-        const user = users[socket.id];
-        if (!user) return;
-
-        io.to(user.roomId).emit("mic-status", {
+        room.micRequests.push({
             socketId: socket.id,
-            enabled: state
+            name: data.name
         });
+
+        io.to(room.hostSocket).emit("mic-request", {
+            socketId: socket.id,
+            name: data.name
+        });
+
     });
 
-    // =========================
-    // HOST MUTE USER
-    // =========================
+    // ============================
+    // ACCEPT MIC
+    // ============================
 
-    socket.on("host-mute-user", targetId => {
+    socket.on("accept-mic", data => {
 
-        const host = users[socket.id];
-        if (!host) return;
+        const room = rooms[data.roomId];
 
-        const room = rooms[host.roomId];
         if (!room) return;
 
-        if (room.host !== socket.id) return;
+        room.speakers.push({
+            socketId: data.userSocket,
+            name: data.name
+        });
 
-        const target = room.users.find(u => u.socketId === targetId);
+        io.to(data.userSocket).emit("mic-approved");
 
-        if (target) {
-            target.muted = true;
-        }
+        io.to(data.roomId).emit("speaker-update", {
+            speakers: room.speakers
+        });
 
-        io.to(targetId).emit("force-muted");
-
-        io.to(host.roomId).emit("room-users", room.users);
     });
 
-    // =========================
-    // HOST UNMUTE USER
-    // =========================
+    // ============================
+    // REJECT MIC
+    // ============================
 
-    socket.on("host-unmute-user", targetId => {
+    socket.on("reject-mic", data => {
 
-        const host = users[socket.id];
-        if (!host) return;
+        io.to(data.userSocket).emit("mic-rejected");
 
-        const room = rooms[host.roomId];
-        if (!room) return;
-
-        if (room.host !== socket.id) return;
-
-        const target = room.users.find(u => u.socketId === targetId);
-
-        if (target) {
-            target.muted = false;
-        }
-
-        io.to(targetId).emit("allow-unmute");
-
-        io.to(host.roomId).emit("room-users", room.users);
     });
 
-    // =========================
+    // ============================
+    // MUTE USER
+    // ============================
+
+    socket.on("mute-user", data => {
+
+        io.to(data.userSocket).emit("force-muted");
+
+    });
+
+    // ============================
+    // KICK USER
+    // ============================
+
+    socket.on("kick-user", data => {
+
+        io.to(data.userSocket).emit("kicked");
+
+    });
+
+    // ============================
     // CHAT
-    // =========================
+    // ============================
 
     socket.on("send-message", data => {
 
-        const user = users[socket.id];
-        if (!user) return;
-
-        const message = {
-            id: Date.now(),
-            sender: user.name,
-            text: data.text,
-            time: new Date().toLocaleTimeString()
-        };
-
-        const file = path.join(
-            STORAGE.messages,
-            `${user.roomId}.json`
-        );
-
-        let old = [];
-
-        if (fs.existsSync(file)) {
-            old = readJSON(file) || [];
-        }
-
-        old.push(message);
-
-        saveJSON(file, old);
-
-        io.to(user.roomId).emit("new-message", message);
-    });
-
-    // =========================
-    // VOICE VISUALIZER
-    // =========================
-
-    socket.on("speaking", speaking => {
-
-        const user = users[socket.id];
-        if (!user) return;
-
-        io.to(user.roomId).emit("user-speaking", {
-            socketId: socket.id,
-            speaking
+        io.to(data.roomId).emit("new-message", {
+            name: data.name,
+            message: data.message
         });
+
     });
 
-    // =========================
+    // ============================
     // DISCONNECT
-    // =========================
+    // ============================
 
     socket.on("disconnect", () => {
 
-        const user = users[socket.id];
+        for (const roomId in rooms) {
 
-        if (!user) return;
+            const room = rooms[roomId];
 
-        const room = rooms[user.roomId];
+            // HOST LEFT
+            if (room.hostSocket === socket.id) {
 
-        // HOST LEFT
-        if (room && room.host === socket.id) {
+                io.to(roomId).emit("room-closed");
 
-            io.to(user.roomId).emit("room-closed");
+                delete rooms[roomId];
 
-            delete rooms[user.roomId];
-
-            const roomFile = path.join(
-                STORAGE.rooms,
-                `${user.roomId}.json`
-            );
-
-            if (fs.existsSync(roomFile)) {
-                fs.unlinkSync(roomFile);
+                console.log("ROOM CLOSED:", roomId);
             }
 
-            console.log("ROOM CLOSED:", user.roomId);
         }
 
-        // NORMAL USER LEFT
-        if (room) {
-            room.users = room.users.filter(
-                u => u.socketId !== socket.id
-            );
-
-            io.to(user.roomId).emit(
-                "room-users",
-                room.users
-            );
-        }
-
-        delete users[socket.id];
-
-        console.log("USER DISCONNECTED");
     });
 
 });
 
-// =========================
-// START SERVER
-// =========================
+// =================================
 
 server.listen(PORT, () => {
-    console.log(`
-====================================
-G-MATRIX SERVER RUNNING
-PORT: ${PORT}
-====================================
-`);
+    console.log("SERVER RUNNING");
 });
